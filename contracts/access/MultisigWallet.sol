@@ -25,7 +25,14 @@ contract MultisigWallet is IMultisigWallet, UUPSUpgradeable, ERC165 {
     mapping(uint256 txId => mapping(address signer => bool accepted)) public txConfirmations;
     mapping(uint256 txId => uint256 count) public txConfirmationsCount;
 
-    function initialize(uint256 _requiredSigners, address[] calldata _signers) public initializer {
+    /**
+     * @notice Constructor that disables initializers
+     */
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(uint256 _requiredSigners, address[] calldata _signers) external initializer {
         require(_requiredSigners > 0, "_requiredSigners must be greater than zero!");
         require(_signers.length >= _requiredSigners, "_requiredSigners > _signers.length");
         requiredSigners = _requiredSigners;
@@ -35,6 +42,7 @@ contract MultisigWallet is IMultisigWallet, UUPSUpgradeable, ERC165 {
             ++signersCount;
         }
         owners = _signers;
+        __UUPSUpgradeable_init();
     }
 
     function withdraw(address _recipient, address _token, uint256 _amount) external {
@@ -150,9 +158,5 @@ contract MultisigWallet is IMultisigWallet, UUPSUpgradeable, ERC165 {
 
     function _authorizeUpgrade(address) internal view override {
         _requireSelfCall();
-    }
-
-    constructor() {
-        _disableInitializers();
     }
 }

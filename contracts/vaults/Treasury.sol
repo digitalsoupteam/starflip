@@ -21,13 +21,21 @@ contract Treasury is UUPSUpgradeable, MulticallUpgradeable {
     IAddressBook public addressBook;
 
     /**
+     * @notice Constructor that disables initializers
+     */
+    constructor() {
+        _disableInitializers();
+    }
+
+    /**
      * @notice Receive function to allow the contract to receive ETH
      */
     receive() external payable {}
 
-    function initialize(address _addressBook) public initializer {
+    function initialize(address _addressBook) external initializer {
         require(_addressBook != address(0), "_addressBook is zero!");
         addressBook = IAddressBook(_addressBook);
+        __UUPSUpgradeable_init();
     }
 
     /**
@@ -55,9 +63,5 @@ contract Treasury is UUPSUpgradeable, MulticallUpgradeable {
 
     function _authorizeUpgrade(address) internal view override {
         addressBook.accessRoles().requireOwnersMultisig(msg.sender);
-    }
-
-    constructor() {
-        _disableInitializers();
     }
 }

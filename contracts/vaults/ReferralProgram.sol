@@ -36,6 +36,18 @@ IReferralProgram
     );
 
     /**
+     * @notice Constructor that disables initializers
+     */
+    constructor() {
+        _disableInitializers();
+    }
+
+    /**
+     * @dev Receive function to accept native token
+     */
+    receive() external payable {}
+
+    /**
      * @dev Initializes the contract
      * @param _addressBook The address book contract
      * @param initialReferralPercent The initial referral percentage
@@ -176,16 +188,4 @@ IReferralProgram
     function _authorizeUpgrade(address newImplementation) internal view override {
         addressBook.accessRoles().requireOwnersMultisig(msg.sender);
     }
-
-    /**
-     * @dev Constructor that disables initializers
-     */
-    constructor() {
-        _disableInitializers();
-    }
-
-    /**
-     * @dev Receive function to accept native token
-     */
-    receive() external payable {}
 }

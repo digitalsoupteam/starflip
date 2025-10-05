@@ -24,7 +24,7 @@ contract GameManager is IGameManager, UUPSUpgradeable {
     event GameAdded(address gameAddress);
 
     /**
-     * @dev Constructor that disables initializers
+     * @notice Constructor that disables initializers
      */
     constructor() {
         _disableInitializers();

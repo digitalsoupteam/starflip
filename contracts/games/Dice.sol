@@ -131,7 +131,6 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
         require(_minBetValue < _maxBetValue, "Min bet value must be less than max bet");
         require(_maxBetValue <= 100, "Max bet value must be less or equals to 100");
         require(_maxBetValue > _minBetValue, "Max bet value must be greater than min bet");
-        __UUPSUpgradeable_init();
 
         s_vrfCoordinator = IVRFCoordinatorV2Plus(_vrfCoordinator);
         subscriptionId = _subscriptionId;
@@ -144,6 +143,7 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
         minBetAmount = _minBetAmount;
         maxBetAmount = _maxBetAmount;
         houseEdge = _houseEdge;
+        __UUPSUpgradeable_init();
     }
 
     /**

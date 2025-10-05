@@ -1,21 +1,28 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import { UUPSUpgradeable } from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import { IERC165 } from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
-import { IAccessRoles } from "../_interfaces/access/IAccessRoles.sol";
-import { IMultisigWallet } from "../_interfaces/access/IMultisigWallet.sol";
+import {IAccessRoles} from "../_interfaces/access/IAccessRoles.sol";
+import {IMultisigWallet} from "../_interfaces/access/IMultisigWallet.sol";
 
 contract AccessRoles is IAccessRoles, UUPSUpgradeable {
     IMultisigWallet public ownersMultisig;
     mapping(address account => bool) public administrators;
     address public deployer;
 
+    /**
+     * @notice Constructor that disables initializers
+     */
+    constructor() {
+        _disableInitializers();
+    }
+
     function initialize(
         address _ownersMultisig,
         address[] calldata _administrators
-    ) public initializer {
+    ) external initializer {
         require(_ownersMultisig != address(0), "_ownersMultisig is zero!");
         ownersMultisig = IMultisigWallet(_ownersMultisig);
         for (uint256 i; i < _administrators.length; ++i) {
@@ -24,6 +31,7 @@ contract AccessRoles is IAccessRoles, UUPSUpgradeable {
             administrators[administrator] = true;
         }
         deployer = msg.sender;
+        __UUPSUpgradeable_init();
     }
 
     function setOwnersMultisig(address _ownersMultisig) external {
@@ -31,7 +39,7 @@ contract AccessRoles is IAccessRoles, UUPSUpgradeable {
         bool supportsInterface;
         if (_ownersMultisig.code.length > 0) {
             try
-                IERC165(_ownersMultisig).supportsInterface(type(IMultisigWallet).interfaceId)
+            IERC165(_ownersMultisig).supportsInterface(type(IMultisigWallet).interfaceId)
             returns (bool result) {
                 supportsInterface = result;
             } catch {}
@@ -74,9 +82,5 @@ contract AccessRoles is IAccessRoles, UUPSUpgradeable {
 
     function _authorizeUpgrade(address) internal view override {
         requireOwnersMultisig(msg.sender);
-    }
-
-    constructor() {
-        _disableInitializers();
     }
 }

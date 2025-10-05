@@ -13,9 +13,17 @@ contract PauseManager is IPauseManager, UUPSUpgradeable {
 
     mapping(address => bool paused) public pausedContracts;
 
-    function initialize(address _addressBook) public initializer {
+    /**
+     * @notice Constructor that disables initializers
+     */
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(address _addressBook) external initializer {
         require(_addressBook != address(0), "_addressBook is zero!");
         addressBook = IAddressBook(_addressBook);
+        __UUPSUpgradeable_init();
     }
 
     function pause() external {
@@ -44,9 +52,5 @@ contract PauseManager is IPauseManager, UUPSUpgradeable {
 
     function _authorizeUpgrade(address) internal view override {
         addressBook.accessRoles().requireOwnersMultisig(msg.sender);
-    }
-
-    constructor() {
-        _disableInitializers();
     }
 }
