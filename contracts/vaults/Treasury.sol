@@ -16,24 +16,30 @@ contract Treasury is UUPSUpgradeable, MulticallUpgradeable {
     using SafeERC20 for IERC20;
     using Address for address payable;
 
-    address constant NATIVE_TOKEN = address(0);
-
     IAddressBook public addressBook;
+
+    /**
+     * @notice Constructor that disables initializers
+     */
+    constructor() {
+        _disableInitializers();
+    }
 
     /**
      * @notice Receive function to allow the contract to receive ETH
      */
     receive() external payable {}
 
-    function initialize(address _addressBook) public initializer {
+    function initialize(address _addressBook) external initializer {
         require(_addressBook != address(0), "_addressBook is zero!");
         addressBook = IAddressBook(_addressBook);
+        __UUPSUpgradeable_init();
     }
 
     /**
      * @notice Withdraw funds (native or ERC20) from the contract (owners multisig only)
      * @dev Allows the owners multisig to withdraw funds from the contract
-     * @param _token The address of the token to withdraw (use NATIVE_TOKEN for ETH)
+     * @param _token The address of the token to withdraw (use address(0) for ETH)
      * @param _amount The amount to withdraw
      * @param _recipient The address to send the funds to
      */
@@ -42,7 +48,7 @@ contract Treasury is UUPSUpgradeable, MulticallUpgradeable {
         require(_amount > 0, "_amount is zero!");
         require(_recipient != address(0), "_recipient is zero!");
 
-        if (_token == NATIVE_TOKEN) {
+        if (_token == address(0)) {
             require(_amount <= address(this).balance, "Insufficient contract balance");
             payable(_recipient).sendValue(_amount);
         } else {
@@ -55,9 +61,5 @@ contract Treasury is UUPSUpgradeable, MulticallUpgradeable {
 
     function _authorizeUpgrade(address) internal view override {
         addressBook.accessRoles().requireOwnersMultisig(msg.sender);
-    }
-
-    constructor() {
-        _disableInitializers();
     }
 }

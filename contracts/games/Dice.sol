@@ -24,8 +24,6 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
     using SafeERC20 for IERC20;
     using Address for address payable;
 
-    address constant NATIVE_TOKEN = address(0);
-
     uint256 private subscriptionId;
     bytes32 private keyHash;
     uint32 private callbackGasLimit;
@@ -131,7 +129,6 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
         require(_minBetValue < _maxBetValue, "Min bet value must be less than max bet");
         require(_maxBetValue <= 100, "Max bet value must be less or equals to 100");
         require(_maxBetValue > _minBetValue, "Max bet value must be greater than min bet");
-        __UUPSUpgradeable_init();
 
         s_vrfCoordinator = IVRFCoordinatorV2Plus(_vrfCoordinator);
         subscriptionId = _subscriptionId;
@@ -144,6 +141,7 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
         minBetAmount = _minBetAmount;
         maxBetAmount = _maxBetAmount;
         houseEdge = _houseEdge;
+        __UUPSUpgradeable_init();
     }
 
     /**
@@ -169,7 +167,7 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
      * @dev Validates bet parameters, stores the bet, and sends a VRF request
      * @param targetNumber The number to compare the roll result against (must be between minBetValue and maxBetValue)
      * @param comparisonType The type of comparison for the bet: GREATER_THAN or LESS_THAN
-     * @param token The address of the token to bet with (use NATIVE_TOKEN for ETH)
+     * @param token The address of the token to bet with (use address(0) for ETH)
      * @param betAmount The amount of tokens to bet (ignored for native token, use msg.value instead)
      * @return requestId The ID of the Chainlink VRF request associated with this dice roll
      */
@@ -187,7 +185,7 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
         addressBook.tokensManager().requireTokenSupport(token);
 
         uint256 actualBetAmount;
-        if (token == NATIVE_TOKEN) {
+        if (token == address(0)) {
             actualBetAmount = msg.value;
             require(
                 betAmount == 0 || betAmount == msg.value,
@@ -206,7 +204,7 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
 
         uint256 payout = calculatePayout(actualBetAmount, targetNumber, comparisonType);
 
-        if (token == NATIVE_TOKEN) {
+        if (token == address(0)) {
             if (address(this).balance < payout) revert InsufficientContractBalance();
         } else {
             if (IERC20(token).balanceOf(address(this)) < payout) revert InsufficientContractBalance();
@@ -311,7 +309,7 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
         bets[roller] = bet;
 
         if (won) {
-            if (bet.token == NATIVE_TOKEN) {
+            if (bet.token == address(0)) {
                 payable(roller).sendValue(bet.payout);
             } else {
                 IERC20(bet.token).safeTransfer(roller, bet.payout);
@@ -397,16 +395,16 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
     /**
      * @notice Withdraw funds (native or ERC20) from the contract to treasury (administrators only)
      * @dev Allows the administrators to withdraw funds from the contract to treasury
-     * @param _token The address of the token to withdraw (use NATIVE_TOKEN for ETH)
+     * @param _token The address of the token to withdraw (use address(0) for ETH)
      * @param _amount The amount to withdraw
      */
     function withdrawToTreasury(address _token, uint256 _amount) external {
         addressBook.accessRoles().requireAdministrator(msg.sender);
         require(_amount > 0, "_amount is zero!");
 
-        if (_token != NATIVE_TOKEN) addressBook.tokensManager().requireTokenSupport(_token);
+        if (_token != address(0)) addressBook.tokensManager().requireTokenSupport(_token);
 
-        if (_token == NATIVE_TOKEN) {
+        if (_token == address(0)) {
             require(_amount <= address(this).balance, "Insufficient contract balance");
             Address.sendValue(payable(addressBook.treasury()), _amount);
         } else {
@@ -472,5 +470,16 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
         addressBook.accessRoles().requireOwnersMultisig(msg.sender);
         require(newHouseEdge <= 50, "House edge must be less than or equal to 50");
         houseEdge = newHouseEdge;
+    }
+
+    /**
+     * @notice Sets the gas limit for Chainlink callback function
+     * @dev Allows the owners multisig to update the gas limit
+     * @param newGasLimit The new gas limit
+     */
+    function setCallbackGasLimit(uint32 newGasLimit) external {
+        addressBook.accessRoles().requireOwnersMultisig(msg.sender);
+        require(newGasLimit > 50000, "Gas limit too low");
+        callbackGasLimit = newGasLimit;
     }
 }

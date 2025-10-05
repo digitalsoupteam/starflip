@@ -18,9 +18,17 @@ contract AddressBook is IAddressBook, UUPSUpgradeable {
     ITokensManager public tokensManager;
     IReferralProgram public referralProgram;
 
-    function initialize(address _accessRoles) public initializer {
+    /**
+     * @notice Constructor that disables initializers
+     */
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(address _accessRoles) external initializer {
         require(_accessRoles != address(0), "_accessRoles is zero!");
         accessRoles = IAccessRoles(_accessRoles);
+        __UUPSUpgradeable_init();
     }
 
     function initialSetGameManager(address _gameManager) external {
@@ -60,9 +68,5 @@ contract AddressBook is IAddressBook, UUPSUpgradeable {
 
     function _authorizeUpgrade(address) internal view override {
         accessRoles.requireOwnersMultisig(msg.sender);
-    }
-
-    constructor() {
-        _disableInitializers();
     }
 }

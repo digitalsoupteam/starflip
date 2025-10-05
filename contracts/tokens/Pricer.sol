@@ -13,14 +13,22 @@ contract Pricer is IPricer, UUPSUpgradeable {
 
     event SetPrice(int256 oldPrice, int256 newPrice);
 
+    /**
+     * @notice Constructor that disables initializers
+     */
+    constructor() {
+        _disableInitializers();
+    }
+
     function initialize(
         address _addressBook,
         int256 _initialPrice,
         string calldata _description
-    ) public initializer {
+    ) external initializer {
         addressBook = IAddressBook(_addressBook);
         currentPrice = _initialPrice;
         description = _description;
+        __UUPSUpgradeable_init();
     }
 
     function _authorizeUpgrade(address) internal view override {

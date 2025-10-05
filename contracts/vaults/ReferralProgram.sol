@@ -36,6 +36,18 @@ IReferralProgram
     );
 
     /**
+     * @notice Constructor that disables initializers
+     */
+    constructor() {
+        _disableInitializers();
+    }
+
+    /**
+     * @dev Receive function to accept native token
+     */
+    receive() external payable {}
+
+    /**
      * @dev Initializes the contract
      * @param _addressBook The address book contract
      * @param initialReferralPercent The initial referral percentage
@@ -136,8 +148,7 @@ IReferralProgram
 
         if (_payToken == address(0)) {
             require(_payTokenAmount <= address(this).balance, "Insufficient contract balance");
-            (bool success,) = player.call{value: _payTokenAmount}("");
-            require(success, "ReferralProgram: native token transfer failed");
+            Address.sendValue(payable(player), _payTokenAmount);
         } else {
             IERC20 token = IERC20(_payToken);
             require(_payTokenAmount <= token.balanceOf(address(this)), "Insufficient token balance");
@@ -150,7 +161,7 @@ IReferralProgram
     /**
      * @notice Withdraw funds (native or ERC20) from the contract to treasury (administrators only)
      * @dev Allows the administrators to withdraw funds from the contract to treasury
-     * @param _token The address of the token to withdraw (use NATIVE_TOKEN for ETH)
+     * @param _token The address of the token to withdraw (use address(0) for ETH)
      * @param _amount The amount to withdraw
      */
     function withdrawToTreasury(address _token, uint256 _amount) external {
@@ -176,16 +187,4 @@ IReferralProgram
     function _authorizeUpgrade(address newImplementation) internal view override {
         addressBook.accessRoles().requireOwnersMultisig(msg.sender);
     }
-
-    /**
-     * @dev Constructor that disables initializers
-     */
-    constructor() {
-        _disableInitializers();
-    }
-
-    /**
-     * @dev Receive function to accept native token
-     */
-    receive() external payable {}
 }

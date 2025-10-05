@@ -1162,6 +1162,41 @@ describe('Dice Contract', function () {
           account: user.account.address,
         }),
       ).to.be.rejected;
+
+      await expect(
+        Dice.write.setCallbackGasLimit([100000], {
+          account: user.account.address,
+        }),
+      ).to.be.rejected;
+    });
+
+    it('Should allow owners multisig to set callback gas limit', async function () {
+      const { Dice, ownersMultisig } = await loadFixture(deployDiceFixture);
+      const newGasLimit = 150000;
+
+      await Dice.write.setCallbackGasLimit([newGasLimit], {
+        account: ownersMultisig.address,
+      });
+
+      // We can't directly check the callbackGasLimit as it's a private variable
+      // But we can verify the transaction succeeded
+      // This is similar to how other configuration tests are structured
+    });
+
+    it('Should prevent setting invalid callback gas limit', async function () {
+      const { Dice, ownersMultisig } = await loadFixture(deployDiceFixture);
+
+      await expect(
+        Dice.write.setCallbackGasLimit([50000], {
+          account: ownersMultisig.address,
+        }),
+      ).to.be.rejectedWith('Gas limit too low');
+
+      await expect(
+        Dice.write.setCallbackGasLimit([0], {
+          account: ownersMultisig.address,
+        }),
+      ).to.be.rejectedWith('Gas limit too low');
     });
   });
 
