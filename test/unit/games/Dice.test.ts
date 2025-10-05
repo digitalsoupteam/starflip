@@ -182,7 +182,27 @@ describe('Dice Contract', function () {
     ]);
     const treasury = await hre.viem.getContractAt('Treasury', treasuryProxy.address);
 
+    // Deploy ReferralProgram
+    const referralProgramImpl = await hre.viem.deployContract('ReferralProgram');
+    const initialReferralPercent = 500n; // 5% (500/10000)
+    const referralProgramInitData = encodeFunctionData({
+      abi: referralProgramImpl.abi,
+      functionName: 'initialize',
+      args: [addressBook.address, initialReferralPercent],
+    });
+    const referralProgramProxy = await hre.viem.deployContract('ERC1967Proxy', [
+      referralProgramImpl.address,
+      referralProgramInitData,
+    ]);
+    const referralProgram = await hre.viem.getContractAt(
+      'ReferralProgram',
+      referralProgramProxy.address,
+    );
+
     await addressBook.write.initialSetTreasury([treasury.address], {
+      account: deployer.account.address,
+    });
+    await addressBook.write.initialSetReferralProgram([referralProgram.address], {
       account: deployer.account.address,
     });
 
@@ -278,10 +298,13 @@ describe('Dice Contract', function () {
 
       expect(events.length).to.equal(1);
       const roller = events[0].args.roller;
+      const token = events[0].args.token;
+
       if (!roller) throw new Error('roller is undefined');
+      if (!token) throw new Error('token is undefined');
 
       expect(getAddress(roller)).to.equal(getAddress(user.account.address));
-      expect(getAddress(events[0].args.token)).to.equal(getAddress(mockToken.address));
+      expect(getAddress(token)).to.equal(getAddress(mockToken.address));
     });
 
     it('Should revert if the game is not registered in GameManager', async function () {
@@ -836,12 +859,16 @@ describe('Dice Contract', function () {
       expect(events.length).to.equal(1);
 
       const roller = events[0].args.roller;
+      const token = events[0].args.token;
+
       if (!roller) throw new Error('roller is undefined');
+      if (!token) throw new Error('token is undefined');
+
       expect(getAddress(roller)).to.equal(getAddress(user.account.address));
 
       const expectedResult = (123456789n % 100n) + 1n;
       expect(events[0].args.result).to.equal(expectedResult);
-      expect(getAddress(events[0].args.token)).to.equal(getAddress(mockToken.address));
+      expect(getAddress(token)).to.equal(getAddress(mockToken.address));
     });
   });
   describe('Pause Integration', function () {

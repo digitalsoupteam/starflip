@@ -161,7 +161,27 @@ describe('Dice Contract Economy Test', function () {
     ]);
     const pauseManager = await hre.viem.getContractAt('PauseManager', pauseManagerProxy.address);
 
+    // Deploy ReferralProgram
+    const referralProgramImpl = await hre.viem.deployContract('ReferralProgram');
+    const initialReferralPercent = 500n; // 5% (500/10000)
+    const referralProgramInitData = encodeFunctionData({
+      abi: referralProgramImpl.abi,
+      functionName: 'initialize',
+      args: [addressBook.address, initialReferralPercent],
+    });
+    const referralProgramProxy = await hre.viem.deployContract('ERC1967Proxy', [
+      referralProgramImpl.address,
+      referralProgramInitData,
+    ]);
+    const referralProgram = await hre.viem.getContractAt(
+      'ReferralProgram',
+      referralProgramProxy.address,
+    );
+
     await addressBook.write.initialSetPauseManager([pauseManager.address], {
+      account: deployer.account.address,
+    });
+    await addressBook.write.initialSetReferralProgram([referralProgram.address], {
       account: deployer.account.address,
     });
 

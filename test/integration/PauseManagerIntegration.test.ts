@@ -189,12 +189,32 @@ describe('PauseManager Integration Test', function () {
     const Dice2 = await hre.viem.getContractAt('Dice', Dice2Proxy.address);
     await setBalance(Dice2.address, parseEther('100'));
 
+    // Deploy ReferralProgram
+    const referralProgramImpl = await hre.viem.deployContract('ReferralProgram');
+    const initialReferralPercent = 500n; // 5% (500/10000)
+    const referralProgramInitData = encodeFunctionData({
+      abi: referralProgramImpl.abi,
+      functionName: 'initialize',
+      args: [addressBook.address, initialReferralPercent],
+    });
+    const referralProgramProxy = await hre.viem.deployContract('ERC1967Proxy', [
+      referralProgramImpl.address,
+      referralProgramInitData,
+    ]);
+    const referralProgram = await hre.viem.getContractAt(
+      'ReferralProgram',
+      referralProgramProxy.address,
+    );
+
     // Register both Dice games in GameManager
     await gameManager.write.addGame([Dice1.address], {
       account: ownersMultisig.address,
     });
     await gameManager.write.addGame([Dice2.address], {
       account: ownersMultisig.address,
+    });
+    await addressBook.write.initialSetReferralProgram([referralProgram.address], {
+      account: deployer.account.address,
     });
 
     return {
