@@ -67,16 +67,18 @@ contract TokensManager is ITokensManager, UUPSUpgradeable {
         if (_token == address(0)) {
             decimals = 18;
         } else {
+            require(_token.code.length > 0, "Invalid token address");
             decimals = IERC20Metadata(_token).decimals();
         }
 
         tokenAmount =
             (_usdAmount * (10 ** decimals) * (10 ** PRICERS_DECIMALS)) /
             getPrice(_token) /
-            10 ** USD_DECIMALS;
+            (10 ** USD_DECIMALS);
 
         require(tokenAmount > 0, "tokenAmount is zero!");
     }
+
 
     function requireTokenSupport(address _token) external view {
         require(address(pricers[_token]) != address(0), "token not supported!");
