@@ -16,8 +16,6 @@ contract Treasury is UUPSUpgradeable, MulticallUpgradeable {
     using SafeERC20 for IERC20;
     using Address for address payable;
 
-    address constant NATIVE_TOKEN = address(0);
-
     IAddressBook public addressBook;
 
     /**
@@ -41,7 +39,7 @@ contract Treasury is UUPSUpgradeable, MulticallUpgradeable {
     /**
      * @notice Withdraw funds (native or ERC20) from the contract (owners multisig only)
      * @dev Allows the owners multisig to withdraw funds from the contract
-     * @param _token The address of the token to withdraw (use NATIVE_TOKEN for ETH)
+     * @param _token The address of the token to withdraw (use address(0) for ETH)
      * @param _amount The amount to withdraw
      * @param _recipient The address to send the funds to
      */
@@ -50,7 +48,7 @@ contract Treasury is UUPSUpgradeable, MulticallUpgradeable {
         require(_amount > 0, "_amount is zero!");
         require(_recipient != address(0), "_recipient is zero!");
 
-        if (_token == NATIVE_TOKEN) {
+        if (_token == address(0)) {
             require(_amount <= address(this).balance, "Insufficient contract balance");
             payable(_recipient).sendValue(_amount);
         } else {

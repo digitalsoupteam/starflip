@@ -161,7 +161,7 @@ IReferralProgram
     /**
      * @notice Withdraw funds (native or ERC20) from the contract to treasury (administrators only)
      * @dev Allows the administrators to withdraw funds from the contract to treasury
-     * @param _token The address of the token to withdraw (use NATIVE_TOKEN for ETH)
+     * @param _token The address of the token to withdraw (use address(0) for ETH)
      * @param _amount The amount to withdraw
      */
     function withdrawToTreasury(address _token, uint256 _amount) external {

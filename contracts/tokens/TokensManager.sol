@@ -17,7 +17,6 @@ contract TokensManager is ITokensManager, UUPSUpgradeable {
 
     uint256 constant USD_DECIMALS = 18;
     uint256 constant PRICERS_DECIMALS = 8;
-    address constant NATIVE_TOKEN = address(0);
 
     mapping(address token => IPricer pricer) public pricers;
 
@@ -65,7 +64,7 @@ contract TokensManager is ITokensManager, UUPSUpgradeable {
         require(_usdAmount > 0, "_usdAmount is zero!");
 
         uint256 decimals;
-        if (_token == NATIVE_TOKEN) {
+        if (_token == address(0)) {
             decimals = 18;
         } else {
             decimals = IERC20Metadata(_token).decimals();
