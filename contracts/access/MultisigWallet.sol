@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import { UUPSUpgradeable } from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import { IMultisigWallet } from "../_interfaces/access/IMultisigWallet.sol";
-import { IAddressBook } from "../_interfaces/access/IAddressBook.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+
+import {IMultisigWallet} from "../_interfaces/access/IMultisigWallet.sol";
+import {IAddressBook} from "../_interfaces/access/IAddressBook.sol";
 
 contract MultisigWallet is IMultisigWallet, UUPSUpgradeable, ERC165 {
     using SafeERC20 for IERC20;
@@ -48,8 +50,7 @@ contract MultisigWallet is IMultisigWallet, UUPSUpgradeable, ERC165 {
     function withdraw(address _recipient, address _token, uint256 _amount) external {
         _requireSelfCall();
         if (_token == address(0)) {
-            (bool result, ) = _recipient.call{ value: _amount }("");
-            require(result, "native transfer failed!");
+            Address.sendValue(payable(_recipient), _amount);
         } else {
             IERC20(_token).safeTransfer(_recipient, _amount);
         }
@@ -108,17 +109,17 @@ contract MultisigWallet is IMultisigWallet, UUPSUpgradeable, ERC165 {
         uint256 _txId,
         address _signer
     )
-        external
-        view
-        returns (
-            address target,
-            uint256 value,
-            bytes memory data,
-            address creator,
-            bool executed,
-            uint256 confirmationsCount,
-            bool alreadySigned
-        )
+    external
+    view
+    returns (
+        address target,
+        uint256 value,
+        bytes memory data,
+        address creator,
+        bool executed,
+        uint256 confirmationsCount,
+        bool alreadySigned
+    )
     {
         _requireTransactionExists(_txId);
         target = txTarget[_txId];

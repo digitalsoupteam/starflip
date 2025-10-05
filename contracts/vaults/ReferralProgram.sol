@@ -148,8 +148,7 @@ IReferralProgram
 
         if (_payToken == address(0)) {
             require(_payTokenAmount <= address(this).balance, "Insufficient contract balance");
-            (bool success,) = player.call{value: _payTokenAmount}("");
-            require(success, "ReferralProgram: native token transfer failed");
+            Address.sendValue(payable(player), _payTokenAmount);
         } else {
             IERC20 token = IERC20(_payToken);
             require(_payTokenAmount <= token.balanceOf(address(this)), "Insufficient token balance");
