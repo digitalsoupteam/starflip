@@ -471,4 +471,15 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
         require(newHouseEdge <= 50, "House edge must be less than or equal to 50");
         houseEdge = newHouseEdge;
     }
+
+    /**
+     * @notice Sets the gas limit for Chainlink callback function
+     * @dev Allows the owners multisig to update the gas limit
+     * @param newGasLimit The new gas limit
+     */
+    function setCallbackGasLimit(uint32 newGasLimit) external {
+        addressBook.accessRoles().requireOwnersMultisig(msg.sender);
+        require(newGasLimit > 50000, "Gas limit too low");
+        callbackGasLimit = newGasLimit;
+    }
 }
