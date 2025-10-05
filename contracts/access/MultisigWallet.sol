@@ -49,6 +49,7 @@ contract MultisigWallet is IMultisigWallet, UUPSUpgradeable, ERC165 {
 
     function withdraw(address _recipient, address _token, uint256 _amount) external {
         _requireSelfCall();
+        require(_recipient != address(0), "_recipient is zero!");
         if (_token == address(0)) {
             Address.sendValue(payable(_recipient), _amount);
         } else {
