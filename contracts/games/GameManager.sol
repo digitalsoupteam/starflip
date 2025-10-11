@@ -10,28 +10,35 @@ import { IGameManager } from "../_interfaces/games/IGameManager.sol";
 
 /**
  * @title GameManager
- * @dev Contract for managing game addresses on the platform
- * @dev Implements UUPS upgradeable pattern
+ * @notice Contract for managing game addresses on the platform
+ * @dev Implements UUPS upgradeable pattern and provides functionality to add and track games
  */
 contract GameManager is IGameManager, UUPSUpgradeable {
+    /// @notice Reference to the address book contract
     IAddressBook private _addressBook;
+
+    /// @notice Mapping of game addresses to their existence status (true if the game exists)
     mapping(address => bool) private _games;
+
+    /// @notice Array of all registered game addresses
     address[] private _gameAddresses;
     /**
-     * @dev Emitted when a new game is added
-     * @param gameAddress The address of the game contract
+     * @notice Emitted when a new game is added to the platform
+     * @param gameAddress The address of the game contract that was added
      */
     event GameAdded(address gameAddress);
 
     /**
      * @notice Constructor that disables initializers
+     * @dev Prevents the implementation contract from being initialized
      */
     constructor() {
         _disableInitializers();
     }
 
     /**
-     * @dev Initializes the contract
+     * @notice Initializes the contract with the address book reference
+     * @dev Can only be called once due to the initializer modifier
      * @param addressBook Address of the AddressBook contract
      */
     function initialize(address addressBook) external initializer {
@@ -41,8 +48,10 @@ contract GameManager is IGameManager, UUPSUpgradeable {
     }
 
     /**
-     * @dev Adds a new game to the platform
-     * @param gameAddress The address of the game contract
+     * @notice Adds a new game to the platform
+     * @dev Only the owners multisig can add new games
+     * @dev Validates that the game contract implements the required interface
+     * @param gameAddress The address of the game contract to add
      * @return success True if the game was added successfully
      */
     function addGame(address gameAddress) external returns (bool success) {
@@ -61,7 +70,8 @@ contract GameManager is IGameManager, UUPSUpgradeable {
     }
 
     /**
-     * @dev Gets all game addresses
+     * @notice Gets all registered game addresses
+     * @dev Returns the complete list of games that have been added to the platform
      * @return An array of all game addresses
      */
     function getAllGames() external view returns (address[] memory) {
@@ -69,18 +79,20 @@ contract GameManager is IGameManager, UUPSUpgradeable {
     }
 
     /**
-     * @dev True if game exist
-     * @param gameAddress The address of the game contract
-     * @return True if game exist
+     * @notice Checks if a game exists on the platform
+     * @dev Returns true if the game has been added to the platform
+     * @param gameAddress The address of the game contract to check
+     * @return True if the game exists, false otherwise
      */
     function isGameExist(address gameAddress) external view returns (bool) {
         return _games[gameAddress];
     }
 
     /**
-     * @dev Validates that an address is a valid game contract
+     * @notice Validates that an address is a valid game contract
+     * @dev Uses a try-catch to safely call the validation function
      * @param gameAddress The address to validate
-     * @return True if the address is a valid game contract
+     * @return True if the address is a valid game contract, false otherwise
      */
     function _isValidGame(address gameAddress) private view returns (bool) {
         try this._validateGameInterface(gameAddress) returns (bool result) {
@@ -91,7 +103,9 @@ contract GameManager is IGameManager, UUPSUpgradeable {
     }
 
     /**
+     * @notice Validates that a contract implements the required game interface
      * @dev This function will revert if any call fails
+     * @dev Checks that the contract implements the minBetAmount, maxBetAmount, and houseEdge functions
      * @param gameAddress The address to validate
      * @return True if the address is a valid game contract
      */
@@ -104,10 +118,11 @@ contract GameManager is IGameManager, UUPSUpgradeable {
     }
 
     /**
-     * @dev Authorizes an upgrade to a new implementation
+     * @notice Authorization function for contract upgrades
      * @dev Only the owners multisig can upgrade the contract
+     * @param newImplementation Address of the new implementation (unused parameter required by UUPS)
      */
-    function _authorizeUpgrade(address) internal view override {
+    function _authorizeUpgrade(address newImplementation) internal view override {
         _addressBook.accessRoles().requireOwnersMultisig(msg.sender);
     }
 }

@@ -24,37 +24,77 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
     using SafeERC20 for IERC20;
     using Address for address payable;
 
+    /// @notice Chainlink VRF subscription ID
     uint256 private subscriptionId;
+    /// @notice Chainlink VRF key hash for the gas lane
     bytes32 private keyHash;
+    /// @notice Gas limit for the Chainlink VRF callback
     uint32 private callbackGasLimit;
+    /// @notice Number of confirmations required for Chainlink VRF
     uint16 private requestConfirmations;
+    /// @notice Reference to the address book contract
     IAddressBook private addressBook;
+    /// @notice Minimum target number value allowed in the game (from 1)
     uint8 public minBetValue;
+    /// @notice Maximum target number value allowed in the game (up to 100)
     uint8 public maxBetValue;
+    /// @notice Minimum bet amount allowed in the game (in wei)
     uint256 public minBetAmount;
+    /// @notice Maximum bet amount allowed in the game (in wei)
     uint256 public maxBetAmount;
+    /// @notice House edge percentage (e.g., 10 for 10%)
     uint8 public houseEdge;
 
+    /**
+     * @notice Enum representing the type of comparison for dice roll bets
+     * @dev Used to determine if the roll result should be greater than or less than the target number
+     */
     enum ComparisonType {
+        /// @notice Roll result must be greater than the target number
         GREATER_THAN,
+        /// @notice Roll result must be less than the target number
         LESS_THAN
     }
 
+    /**
+     * @notice Struct representing a bet in the dice game
+     * @dev Stores all information about a player's bet
+     */
     struct Bet {
+        /// @notice Amount of tokens bet
         uint256 amount;
+        /// @notice Target number for the bet (between minBetValue and maxBetValue)
         uint256 targetNumber;
+        /// @notice Type of comparison (GREATER_THAN or LESS_THAN)
         ComparisonType comparisonType;
+        /// @notice Whether the bet has been settled
         bool settled;
+        /// @notice Whether the bet was won
         bool won;
+        /// @notice Potential payout amount if the bet is won
         uint256 payout;
+        /// @notice Address of the token used for the bet (address(0) for ETH)
         address token;
     }
 
+    /// @notice Mapping from Chainlink VRF request ID to the address of the player who made the request
     mapping(uint256 => address) private requestIdToSender;
+    /// @notice Mapping from player address to their latest roll result (type(uint256).max indicates roll in progress)
     mapping(address => uint256) private rollResults;
+    /// @notice Mapping from player address to their current bet
     mapping(address => Bet) private bets;
+    /// @notice Mapping from Chainlink VRF request ID to the associated bet
     mapping(uint256 => Bet) private requestIdToBet;
 
+    /**
+     * @notice Event emitted when a dice roll is requested
+     * @param requestId The Chainlink VRF request ID
+     * @param roller The address of the player making the roll
+     * @param betAmount The amount of tokens bet
+     * @param targetNumber The target number for the bet
+     * @param comparisonType The type of comparison (GREATER_THAN or LESS_THAN)
+     * @param token The address of the token used for the bet (address(0) for ETH)
+     */
     event DiceRollRequested(
         uint256 indexed requestId,
         address indexed roller,
@@ -63,6 +103,16 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
         ComparisonType comparisonType,
         address token
     );
+
+    /**
+     * @notice Event emitted when a dice roll is fulfilled by Chainlink VRF
+     * @param requestId The Chainlink VRF request ID
+     * @param roller The address of the player who made the roll
+     * @param result The result of the dice roll (1-100)
+     * @param won Whether the player won the bet
+     * @param payout The amount paid out to the player (0 if lost)
+     * @param token The address of the token used for the bet (address(0) for ETH)
+     */
     event DiceRollFulfilled(
         uint256 indexed requestId,
         address indexed roller,
@@ -71,6 +121,18 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
         uint256 payout,
         address token
     );
+
+    /**
+     * @notice Event emitted when a bet is settled
+     * @param player The address of the player who made the bet
+     * @param amount The amount of tokens bet
+     * @param targetNumber The target number for the bet
+     * @param comparisonType The type of comparison (GREATER_THAN or LESS_THAN)
+     * @param result The result of the dice roll (1-100)
+     * @param won Whether the player won the bet
+     * @param payout The amount paid out to the player (0 if lost)
+     * @param token The address of the token used for the bet (address(0) for ETH)
+     */
     event BetSettled(
         address indexed player,
         uint256 amount,
@@ -82,10 +144,15 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
         address token
     );
 
+    /// @notice Error thrown when a player tries to roll while a previous roll is still in progress
     error RollInProgress();
+    /// @notice Error thrown when a roll is outside the valid range
     error InvalidRollRange();
+    /// @notice Error thrown when a bet amount is outside the allowed range
     error InvalidBetAmount();
+    /// @notice Error thrown when a target number is outside the allowed range
     error InvalidTargetNumber();
+    /// @notice Error thrown when the contract has insufficient balance to pay out a potential win
     error InsufficientContractBalance();
 
     /**
@@ -147,8 +214,9 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
     /**
      * @notice Authorizes an upgrade to a new implementation
      * @dev Only the owners multisig can upgrade the contract
+     * @param newImplementation Address of the new implementation (unused parameter required by UUPS)
      */
-    function _authorizeUpgrade(address) internal view override {
+    function _authorizeUpgrade(address newImplementation) internal view override {
         addressBook.accessRoles().requireOwnersMultisig(msg.sender);
     }
 
