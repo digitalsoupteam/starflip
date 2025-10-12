@@ -1,6 +1,7 @@
 import { parseEther } from 'viem';
-
 import { buildModule } from '@nomicfoundation/hardhat-ignition/modules';
+import { network } from 'hardhat';
+
 import addressBookModule from '../access/AddressBook';
 
 const VRF_COORDINATOR_ADDRESSES = {
@@ -20,21 +21,21 @@ const KEY_HASHES = {
 
 export default buildModule('DiceModule', m => {
   const { addressBookProxy } = m.useModule(addressBookModule);
-  const network = process.env.HARDHAT_NETWORK || 'hardhat';
+  const networkName = network.name;
   let vrfCoordinatorAddress;
 
-  if (network === 'hardhat') {
+  if (networkName === 'hardhat') {
     vrfCoordinatorAddress = m.contract('MockVRFCoordinator');
   } else {
     vrfCoordinatorAddress =
-      VRF_COORDINATOR_ADDRESSES[network as keyof typeof VRF_COORDINATOR_ADDRESSES];
+      VRF_COORDINATOR_ADDRESSES[networkName as keyof typeof VRF_COORDINATOR_ADDRESSES];
   }
 
   const impl = m.contract('Dice', [vrfCoordinatorAddress]);
   const initData = m.encodeFunctionCall(impl, 'initialize', [
     vrfCoordinatorAddress,
-    SUBSCRIPTION_IDS[network as keyof typeof SUBSCRIPTION_IDS],
-    KEY_HASHES[network as keyof typeof KEY_HASHES],
+    SUBSCRIPTION_IDS[networkName as keyof typeof SUBSCRIPTION_IDS],
+    KEY_HASHES[networkName as keyof typeof KEY_HASHES],
     addressBookProxy,
     1,
     100,

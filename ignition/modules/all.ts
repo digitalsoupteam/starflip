@@ -14,9 +14,9 @@ const AllModule = buildModule('AllModule', m => {
   const addressBook = m.useModule(AddressBookModule);
   const multisigWallet = m.useModule(MultisigWalletModule);
   const pauseManager = m.useModule(PauseManagerModule);
-  const tokensManager = m.useModule(TokensManagerModule);
   const treasury = m.useModule(TreasuryModule);
   const referralProgram = m.useModule(ReferralProgram);
+  const tokensManager = m.useModule(TokensManagerModule);
   const gameManager = m.useModule(GameManagerModule);
   const dice = m.useModule(DiceModule);
 

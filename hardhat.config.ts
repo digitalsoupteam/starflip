@@ -26,9 +26,12 @@ const config: HardhatUserConfig = {
       loggingEnabled: false,
     },
     baseSepolia: {
-        url: "https://sepolia.base.org",
-        chainId: 84532,
-        accounts: [process.env.PRIVATE_KEY!],
+      url: 'https://sepolia.base.org',
+      chainId: 84532,
+      accounts: [process.env.PRIVATE_KEY!],
+      ignition: {
+        explorerUrl: 'https://sepolia.basescan.org/',
+      },
     },
   },
 };
