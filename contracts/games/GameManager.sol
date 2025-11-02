@@ -29,6 +29,12 @@ contract GameManager is IGameManager, UUPSUpgradeable {
     event GameAdded(address gameAddress);
 
     /**
+     * @notice Emitted when a game is removed from the platform
+     * @param gameAddress The address of the game contract that was removed
+     */
+    event GameRemoved(address gameAddress);
+
+    /**
      * @notice Constructor that disables initializers
      * @dev Prevents the implementation contract from being initialized
      */
@@ -65,6 +71,35 @@ contract GameManager is IGameManager, UUPSUpgradeable {
         _gameAddresses.push(gameAddress);
 
         emit GameAdded(gameAddress);
+
+        return true;
+    }
+
+    /**
+     * @notice Removes a game from the platform
+     * @dev Only the owners multisig can remove games
+     * @param gameAddress The address of the game contract to remove
+     * @return success True if the game was removed successfully
+     */
+    function removeGame(address gameAddress) external returns (bool success) {
+        _addressBook.accessRoles().requireOwnersMultisig(msg.sender);
+
+        require(gameAddress != address(0), "Zero address");
+        require(_games[gameAddress], "Game does not exist");
+
+        _games[gameAddress] = false;
+
+        for (uint256 i = 0; i < _gameAddresses.length; i++) {
+            if (_gameAddresses[i] == gameAddress) {
+                if (i < _gameAddresses.length - 1) {
+                    _gameAddresses[i] = _gameAddresses[_gameAddresses.length - 1];
+                }
+                _gameAddresses.pop();
+                break;
+            }
+        }
+
+        emit GameRemoved(gameAddress);
 
         return true;
     }

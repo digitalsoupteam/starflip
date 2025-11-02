@@ -293,6 +293,117 @@ describe('GameManager Contract', function () {
     });
   });
 
+  describe('Removing Games', function () {
+    it('Should allow owners multisig to remove a game', async function () {
+      const { gameManager, mockGame, ownersMultisig, publicClient } = await loadFixture(deployGameManagerFixture);
+
+      await gameManager.write.addGame([mockGame.address], {
+        account: ownersMultisig.address,
+      });
+
+      let exists = await gameManager.read.isGameExist([mockGame.address]);
+      expect(exists).to.be.true;
+
+      const txHash = await gameManager.write.removeGame([mockGame.address], {
+        account: ownersMultisig.address,
+      });
+
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+
+      const events = await gameManager.getEvents.GameRemoved({
+        blockHash: receipt.blockHash,
+      });
+
+      expect(events.length).to.equal(1);
+      expect(getAddress(events[0].args.gameAddress as Address)).to.equal(
+        getAddress(mockGame.address),
+      );
+
+      exists = await gameManager.read.isGameExist([mockGame.address]);
+      expect(exists).to.be.false;
+
+      const gameAddresses = await gameManager.read.getAllGames();
+      expect(gameAddresses.length).to.equal(0);
+    });
+
+    it('Should prevent non-owners from removing a game', async function () {
+      const { gameManager, mockGame, ownersMultisig, user, administrator } =
+        await loadFixture(deployGameManagerFixture);
+
+      await gameManager.write.addGame([mockGame.address], {
+        account: ownersMultisig.address,
+      });
+
+      await expect(
+        gameManager.write.removeGame([mockGame.address], {
+          account: user.account.address,
+        }),
+      ).to.be.rejected;
+
+      await expect(
+        gameManager.write.removeGame([mockGame.address], {
+          account: administrator.account.address,
+        }),
+      ).to.be.rejected;
+
+      const exists = await gameManager.read.isGameExist([mockGame.address]);
+      expect(exists).to.be.true;
+    });
+
+    it('Should reject removing a game with zero address', async function () {
+      const { gameManager, ownersMultisig } = await loadFixture(deployGameManagerFixture);
+
+      await expect(
+        gameManager.write.removeGame(['0x0000000000000000000000000000000000000000'], {
+          account: ownersMultisig.address,
+        }),
+      ).to.be.rejectedWith('Zero address');
+    });
+
+    it('Should reject removing a non-existent game', async function () {
+      const { gameManager, mockGame, ownersMultisig } = await loadFixture(deployGameManagerFixture);
+
+      await expect(
+        gameManager.write.removeGame([mockGame.address], {
+          account: ownersMultisig.address,
+        }),
+      ).to.be.rejectedWith('Game does not exist');
+    });
+
+    it('Should correctly handle removing games from the middle of the array', async function () {
+      const { gameManager, mockGame, ownersMultisig } = await loadFixture(deployGameManagerFixture);
+
+      await gameManager.write.addGame([mockGame.address], {
+        account: ownersMultisig.address,
+      });
+
+      const mockGameImpl2 = await hre.viem.deployContract('Dice', [ownersMultisig.address]);
+      await gameManager.write.addGame([mockGameImpl2.address], {
+        account: ownersMultisig.address,
+      });
+
+      const mockGameImpl3 = await hre.viem.deployContract('Dice', [ownersMultisig.address]);
+      await gameManager.write.addGame([mockGameImpl3.address], {
+        account: ownersMultisig.address,
+      });
+
+      let gameAddresses = await gameManager.read.getAllGames();
+      expect(gameAddresses.length).to.equal(3);
+
+      await gameManager.write.removeGame([mockGameImpl2.address], {
+        account: ownersMultisig.address,
+      });
+
+      const exists = await gameManager.read.isGameExist([mockGameImpl2.address]);
+      expect(exists).to.be.false;
+
+      gameAddresses = await gameManager.read.getAllGames();
+      expect(gameAddresses.length).to.equal(2);
+      expect(getAddress(gameAddresses[0])).to.equal(getAddress(mockGame.address));
+      expect(getAddress(gameAddresses[1])).to.equal(getAddress(mockGameImpl3.address));
+    });
+  });
+
   describe('UUPS Upgradeability', function () {
     it('Should allow owners multisig to upgrade the implementation', async function () {
       const { publicClient, gameManager, ownersMultisig } =
