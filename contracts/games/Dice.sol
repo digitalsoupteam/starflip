@@ -400,7 +400,7 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
         );
 
         addressBook.referralProgram().addReward(
-            msg.sender,
+            roller,
             bet.amount,
             bet.token
         );
