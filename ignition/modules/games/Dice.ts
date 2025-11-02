@@ -12,7 +12,7 @@ export default buildModule('DiceModule', m => {
       keyHashes: '0x8af398995b04c28e9951adb9721ef74c74f93e6a478f39e7e0777be13527e7ef'
     },
     baseSepolia: {
-      subscriptionId: 1,
+      subscriptionId: BigInt("34952386452544774831036623393685127576818139619478014201666995682771803052374"),
       vrfCoordinatorAddress: '0x5C210eF41CD1a72de73bF76eC39637bB0d3d7BEE',
       keyHashes: '0x9e1344a1247c8a1785d0a4681a27152bffdb43666ae5bf7d14d24a5efd44bf71'
     },

@@ -155,6 +155,9 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
     /// @notice Error thrown when the contract has insufficient balance to pay out a potential win
     error InsufficientContractBalance();
 
+    /// @notice Event emitted when the subscription ID is updated
+    event SubscriptionIdSet(uint256 subscriptionId);
+
     /**
      * @notice Constructor that disables initializers
      * @param _vrfCoordinator The address of the VRF Coordinator
@@ -200,7 +203,7 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
         s_vrfCoordinator = IVRFCoordinatorV2Plus(_vrfCoordinator);
         subscriptionId = _subscriptionId;
         keyHash = _keyHash;
-        callbackGasLimit = 100000;
+        callbackGasLimit = 300000;
         requestConfirmations = 3;
         addressBook = IAddressBook(_addressBook);
         minBetValue = _minBetValue;
@@ -549,5 +552,25 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
         addressBook.accessRoles().requireOwnersMultisig(msg.sender);
         require(newGasLimit > 50000, "Gas limit too low");
         callbackGasLimit = newGasLimit;
+    }
+
+    /**
+     * @notice Updates the VRF Coordinator and/or subscription ID (owners multisig only)
+     * @dev Allows the owners multisig to update the VRF Coordinator address and subscription ID in one call
+     * @param newCoordinator The address of the new VRF Coordinator (set to address(0) to leave unchanged)
+     * @param newSubscriptionId The new subscription ID (set to 0 to leave unchanged)
+     */
+    function updateVRFSettings(address newCoordinator, uint256 newSubscriptionId) external {
+        addressBook.accessRoles().requireOwnersMultisig(msg.sender);
+
+        if (newCoordinator != address(0)) {
+            s_vrfCoordinator = IVRFCoordinatorV2Plus(newCoordinator);
+            emit CoordinatorSet(newCoordinator);
+        }
+
+        if (newSubscriptionId > 0) {
+            subscriptionId = newSubscriptionId;
+            emit SubscriptionIdSet(newSubscriptionId);
+        }
     }
 }

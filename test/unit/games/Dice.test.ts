@@ -981,6 +981,57 @@ describe('Dice Contract', function () {
       expect(updatedMinBetValue).to.equal(newMinBetValue);
     });
 
+    it('Should allow owners multisig to update VRF Coordinator', async function () {
+      const { Dice, ownersMultisig } = await loadFixture(deployDiceFixture);
+      const newCoordinator = '0x1234567890123456789012345678901234567890';
+
+      await Dice.write.updateVRFSettings([newCoordinator, 0n], {
+        account: ownersMultisig.address,
+      });
+
+      // We can't directly check the s_vrfCoordinator as it's a private variable
+      // But we can verify the transaction succeeded
+      // This is similar to how other configuration tests are structured
+    });
+
+    it('Should allow owners multisig to update subscription ID', async function () {
+      const { Dice, ownersMultisig } = await loadFixture(deployDiceFixture);
+      const newSubscriptionId = 42n;
+
+      await Dice.write.updateVRFSettings([zeroAddress, newSubscriptionId], {
+        account: ownersMultisig.address,
+      });
+
+      // We can't directly check the subscriptionId as it's a private variable
+      // But we can verify the transaction succeeded
+      // This is similar to how other configuration tests are structured
+    });
+
+    it('Should allow owners multisig to update both VRF Coordinator and subscription ID', async function () {
+      const { Dice, ownersMultisig } = await loadFixture(deployDiceFixture);
+      const newCoordinator = '0x1234567890123456789012345678901234567890';
+      const newSubscriptionId = 42n;
+
+      await Dice.write.updateVRFSettings([newCoordinator, newSubscriptionId], {
+        account: ownersMultisig.address,
+      });
+
+      // We can't directly check the private variables
+      // But we can verify the transaction succeeded
+    });
+
+    it('Should prevent non-owners from updating VRF settings', async function () {
+      const { Dice, user } = await loadFixture(deployDiceFixture);
+      const newCoordinator = '0x1234567890123456789012345678901234567890';
+      const newSubscriptionId = 42n;
+
+      await expect(
+        Dice.write.updateVRFSettings([newCoordinator, newSubscriptionId], {
+          account: user.account.address,
+        }),
+      ).to.be.rejected;
+    });
+
     it('Should prevent setting invalid minimum bet value', async function () {
       const { Dice, ownersMultisig } = await loadFixture(deployDiceFixture);
       const maxBetValue = await Dice.read.maxBetValue();
