@@ -339,13 +339,7 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
 
         if (probability == 0) revert InvalidTargetNumber();
 
-        uint256 dynamicHouseEdge = houseEdge + (probability * 15) / 100;
-
-        if (dynamicHouseEdge < houseEdge) dynamicHouseEdge = houseEdge;
-
-        uint256 multiplier = (100 * (100 - dynamicHouseEdge)) / probability;
-
-        return (betAmount * multiplier) / 100;
+        return (betAmount * (100 - houseEdge)) / probability;
     }
 
     /**

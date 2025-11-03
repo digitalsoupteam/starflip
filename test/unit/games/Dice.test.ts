@@ -391,10 +391,9 @@ describe('Dice Contract', function () {
       });
 
       // For GREATER_THAN with targetNumber 50, probability is 50%
-      // Dynamic house edge = 10 + (50 * 15) / 100 = 17.5% (rounded to 17 in solidity)
-      // Multiplier = (100 * (100 - 17)) / 50 = 166
-      // Payout = (betAmount * 166) / 100
-      const expectedPayout = (betAmount * 166n) / 100n;
+      // House edge = 10%
+      // Payout = (betAmount * (100 - 10)) / 50 = (betAmount * 90) / 50
+      const expectedPayout = (betAmount * 90n) / 50n;
       expect(payout).to.equal(expectedPayout);
     });
 
@@ -409,10 +408,9 @@ describe('Dice Contract', function () {
       });
 
       // For LESS_THAN with targetNumber 50, probability is 49%
-      // Dynamic house edge = 10 + (49 * 15) / 100 = 17.35% (rounded to 17 in solidity)
-      // Multiplier = (100 * (100 - 17)) / 49 = 169
-      // Payout = (betAmount * 169) / 100
-      const expectedPayout = (betAmount * 169n) / 100n;
+      // House edge = 10%
+      // Payout = (betAmount * (100 - 10)) / 49 = (betAmount * 90) / 49
+      const expectedPayout = (betAmount * 90n) / 49n;
       expect(payout).to.equal(expectedPayout);
     });
 

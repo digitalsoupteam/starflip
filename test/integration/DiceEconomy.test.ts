@@ -188,8 +188,8 @@ describe('Dice Contract Economy Test', function () {
     return { Dice, MockVRFCoordinator, user };
   }
 
-  // 100 for fork and 1000 for clean local network
-  it('Should run 100 bets and track economy', async function () {
+  // 100 for fork and 10000 for clean local network
+  it('Should run 10000 bets and track economy', async function () {
     const { Dice, MockVRFCoordinator, user } = await loadFixture(deployDiceFixture);
 
     let contractBalance = 100n * 10n ** 18n;
@@ -197,24 +197,18 @@ describe('Dice Contract Economy Test', function () {
 
     const results = [];
 
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 10000; i++) {
       const betAmount = BigInt(Math.floor(Math.random() * 100) + 1) * 10n ** 16n;
 
       if (playerBalance < betAmount) continue;
 
-      const comparisonType = Math.floor(Math.random() * 2);
-
-      let targetNumber;
-      if (comparisonType === 0) {
-        targetNumber = (Math.floor(Math.random() * 9) + 1) * 10;
-      } else {
-        targetNumber = (Math.floor(Math.random() * 8) + 2) * 10;
-      }
+      const comparisonType = Math.floor(Math.random() * 2); // 0 1
+      const targetNumber = Math.floor(Math.random() * (90 - 11 + 1)) + 11; // 11 90
 
       playerBalance -= betAmount;
       contractBalance += betAmount;
 
-      await Dice.write.roll([BigInt(targetNumber), comparisonType, zeroAddress, 0n], {
+      await Dice.write.roll([BigInt(targetNumber), comparisonType, zeroAddress, betAmount], {
         account: user.account.address,
         value: betAmount,
       });
