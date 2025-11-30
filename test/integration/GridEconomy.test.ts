@@ -204,7 +204,7 @@ describe('Grid Contract Economy Test', function() {
 
       const targetCells: number[] = [];
 
-      while (targetCells.length < 5) {
+      while (targetCells.length < 9) {
         const randomNumber = Math.floor(Math.random() * 25) + 1;
 
         if (!targetCells.includes(randomNumber)) targetCells.push(randomNumber);

@@ -255,7 +255,7 @@ describe('Grid Contract', function () {
   describe('Roll Function', function () {
     it('Should emit GridRollRequested event when roll is called with native token', async function () {
       const { Grid, user, zeroAddress } = await loadFixture(deployGridFixture);
-      const txHash = await Grid.write.roll([0b0000000000000000000011111, zeroAddress, 0n], {
+      const txHash = await Grid.write.roll([0b0000000000000000111111111, zeroAddress, 0n], {
         account: user.account.address,
         value: 1000000000000000n,
       });
@@ -285,7 +285,7 @@ describe('Grid Contract', function () {
         account: user.account.address,
       });
 
-      const txHash = await Grid.write.roll([0b0000000000000000000011111, mockToken.address, 1000000000000000n], {
+      const txHash = await Grid.write.roll([0b0000000000000000111111111, mockToken.address, 1000000000000000n], {
         account: user.account.address,
       });
 
@@ -338,7 +338,7 @@ describe('Grid Contract', function () {
       await setBalance(UnregisteredGrid.address, parseEther('100'));
 
       await expect(
-        UnregisteredGrid.write.roll([0b0000000000000000000011111, zeroAddress, 0n], {
+        UnregisteredGrid.write.roll([0b0000000000000000111111111, zeroAddress, 0n], {
           account: user.account.address,
           value: 1000000000000000n,
         }),
@@ -348,13 +348,13 @@ describe('Grid Contract', function () {
     it('Should revert if a roll is already in progress with native token', async function () {
       const { Grid, user, zeroAddress } = await loadFixture(deployGridFixture);
 
-      await Grid.write.roll([0b0000000000000000000011111, zeroAddress, 0n], {
+      await Grid.write.roll([0b0000000000000000111111111, zeroAddress, 0n], {
         account: user.account.address,
         value: 1000000000000000n,
       });
 
       await expect(
-        Grid.write.roll([0b0000000000000000000011111, zeroAddress, 0n], {
+        Grid.write.roll([0b0000000000000000111111111, zeroAddress, 0n], {
           account: user.account.address,
           value: 1000000000000000n,
         }),
@@ -368,11 +368,11 @@ describe('Grid Contract', function () {
         account: user.account.address,
       });
 
-      await Grid.write.roll([0b0000000000000000000011111, mockToken.address, 1000000000000000n], {
+      await Grid.write.roll([0b0000000000000000111111111, mockToken.address, 1000000000000000n], {
         account: user.account.address,
       });
       await expect(
-        Grid.write.roll([0b0000000000000000000011111, mockToken.address, 1000000000000000n], {
+        Grid.write.roll([0b0000000000000000111111111, mockToken.address, 1000000000000000n], {
           account: user.account.address,
         }),
       ).to.be.rejectedWith('RollInProgress');
@@ -411,7 +411,7 @@ describe('Grid Contract', function () {
     it('Should return correct bet details after placing a native token bet', async function () {
       const { Grid, user, zeroAddress } = await loadFixture(deployGridFixture);
       const betAmount = 1000000000000000n;
-      const targetCells = 0b0000000000000000000011111;
+      const targetCells = 0b0000000000000000111111111;
 
       await Grid.write.roll([targetCells, zeroAddress, 0n], {
         account: user.account.address,
@@ -438,7 +438,7 @@ describe('Grid Contract', function () {
     it('Should return correct bet details after placing an ERC20 token bet', async function () {
       const { Grid, user, mockToken } = await loadFixture(deployGridFixture);
       const betAmount = 1000000000000000n;
-      const targetCells = 0b0000000000000000000011111;
+      const targetCells = 0b0000000000000000111111111;
 
       await mockToken.write.approve([Grid.address, betAmount], {
         account: user.account.address,
@@ -468,7 +468,7 @@ describe('Grid Contract', function () {
     it('Should update bet details after fulfillment with native token', async function () {
       const { Grid, MockVRFCoordinator, user, zeroAddress } = await loadFixture(deployGridFixture);
       const betAmount = 1000000000000000n;
-      const targetCells = 0b0000000000000000000011111;
+      const targetCells = 0b0000000000000000111111111;
 
       await Grid.write.roll([targetCells, zeroAddress, 0n], {
         account: user.account.address,
@@ -500,7 +500,7 @@ describe('Grid Contract', function () {
     it('Should update bet details after fulfillment with ERC20 token', async function () {
       const { Grid, MockVRFCoordinator, user, mockToken } = await loadFixture(deployGridFixture);
       const betAmount = 1000000000000000n;
-      const targetCells = 0b0000000000000000000011111;
+      const targetCells = 0b0000000000000000111111111;
 
       await mockToken.write.approve([Grid.address, betAmount], {
         account: user.account.address,
@@ -548,7 +548,7 @@ describe('Grid Contract', function () {
 
       const initialBalance = await Grid.read.getContractBalance();
       const betAmount = 1000000000000000n;
-      const targetCells = 0b0000000000000000000011111;
+      const targetCells = 0b0000000000000000111111111;
 
       await Grid.write.roll([targetCells, zeroAddress, 0n], {
         account: user.account.address,
@@ -564,7 +564,7 @@ describe('Grid Contract', function () {
 
       const initialBalance = await Grid.read.getContractBalance();
       const betAmount = 1000000000000000n;
-      const targetCells = 0b0000000000000000000011111;
+      const targetCells = 0b0000000000000000111111111;
 
       await mockToken.write.approve([Grid.address, betAmount], {
         account: user.account.address,
@@ -583,7 +583,7 @@ describe('Grid Contract', function () {
 
       const initialTokenBalance = await mockToken.read.balanceOf([Grid.address]);
       const betAmount = 1000000000000000n;
-      const targetCells = 0b0000000000000000000011111;
+      const targetCells = 0b0000000000000000111111111;
 
       await mockToken.write.approve([Grid.address, betAmount], {
         account: user.account.address,
@@ -611,7 +611,7 @@ describe('Grid Contract', function () {
     it('Should return 0 if a native token roll is in progress', async function () {
       const { Grid, user, zeroAddress } = await loadFixture(deployGridFixture);
       const betAmount = 1000000000000000n;
-      const targetCells = 0b0000000000000000000011111;
+      const targetCells = 0b0000000000000000111111111;
 
       await Grid.write.roll([targetCells, zeroAddress, betAmount], {
         account: user.account.address,
@@ -628,7 +628,7 @@ describe('Grid Contract', function () {
     it('Should return 0 if an ERC20 token roll is in progress', async function () {
       const { Grid, user, mockToken } = await loadFixture(deployGridFixture);
       const betAmount = 1000000000000000n;
-      const targetCells = 0b0000000000000000000011111;
+      const targetCells = 0b0000000000000000111111111;
 
       await mockToken.write.approve([Grid.address, betAmount], {
         account: user.account.address,
@@ -652,7 +652,7 @@ describe('Grid Contract', function () {
       });
 
       const betAmount = 1000000000000000n;
-      const targetCells = 0b0000000000000000000011111;
+      const targetCells = 0b0000000000000000111111111;
 
       expect(beforeRoll).to.be.false;
 
@@ -671,7 +671,7 @@ describe('Grid Contract', function () {
     it('Should correctly identify when an ERC20 token roll is in progress', async function () {
       const { Grid, user, mockToken } = await loadFixture(deployGridFixture);
       const betAmount = 1000000000000000n;
-      const targetCells = 0b0000000000000000000011111;
+      const targetCells = 0b0000000000000000111111111;
 
       const beforeRoll = await Grid.read.isRollInProgress({
         account: user.account.address,
@@ -697,7 +697,7 @@ describe('Grid Contract', function () {
     it('Should correctly calculate and store roll result after fulfillment with native token', async function () {
       const { Grid, MockVRFCoordinator, user, zeroAddress } = await loadFixture(deployGridFixture);
       const betAmount = 1000000000000000n;
-      const targetCells = 0b0000000000000000000011111;
+      const targetCells = 0b0000000000000000111111111;
 
       await Grid.write.roll([targetCells, zeroAddress, betAmount], {
         account: user.account.address,
@@ -724,7 +724,7 @@ describe('Grid Contract', function () {
     it('Should correctly calculate and store roll result after fulfillment with ERC20 token', async function () {
       const { Grid, MockVRFCoordinator, user, mockToken } = await loadFixture(deployGridFixture);
       const betAmount = 1000000000000000n;
-      const targetCells = 0b0000000000000000000011111;
+      const targetCells = 0b0000000000000000111111111;
 
       await mockToken.write.approve([Grid.address, betAmount], {
         account: user.account.address,
@@ -754,7 +754,7 @@ describe('Grid Contract', function () {
 
     it('Should emit DiceRollFulfilled event when random words are fulfilled with native token', async function () {
       const { Grid, MockVRFCoordinator, user, zeroAddress } = await loadFixture(deployGridFixture);
-      const targetCells = 0b0000000000000000000011111;
+      const targetCells = 0b0000000000000000111111111;
       const betAmount = 1000000000000000n;
 
       await Grid.write.roll([targetCells, zeroAddress, betAmount], {
@@ -791,7 +791,7 @@ describe('Grid Contract', function () {
 
     it('Should emit DiceRollFulfilled event when random words are fulfilled with ERC20 token', async function () {
       const { Grid, MockVRFCoordinator, user, mockToken } = await loadFixture(deployGridFixture);
-      const targetCells = 0b0000000000000000000011111;
+      const targetCells = 0b0000000000000000111111111;
       const betAmount = 1000000000000000n;
 
       await mockToken.write.approve([Grid.address, betAmount], {
@@ -837,7 +837,7 @@ describe('Grid Contract', function () {
     it('Should revert when PauseManager is paused with native token', async function () {
       const { Grid, user, administrator, addressBook, zeroAddress } = await loadFixture(deployGridFixture);
       const betAmount = 1000000000000000n;
-      const targetCells = 0b0000000000000000000011111;
+      const targetCells = 0b0000000000000000111111111;
 
       const pauseManagerAddress = await addressBook.read.pauseManager();
       const pauseManager = await hre.viem.getContractAt('PauseManager', pauseManagerAddress);
@@ -862,7 +862,7 @@ describe('Grid Contract', function () {
     it('Should revert when PauseManager is paused with ERC20 token', async function () {
       const { Grid, user, administrator, addressBook, mockToken } = await loadFixture(deployGridFixture);
       const betAmount = 1000000000000000n;
-      const targetCells = 0b0000000000000000000011111;
+      const targetCells = 0b0000000000000000111111111;
 
       const pauseManagerAddress = await addressBook.read.pauseManager();
       const pauseManager = await hre.viem.getContractAt('PauseManager', pauseManagerAddress);
@@ -890,7 +890,7 @@ describe('Grid Contract', function () {
     it('Should revert when specific contract is paused in PauseManager with native token', async function () {
       const { Grid, user, administrator, addressBook, zeroAddress } = await loadFixture(deployGridFixture);
       const betAmount = 1000000000000000n;
-      const targetCells = 0b0000000000000000000011111;
+      const targetCells = 0b0000000000000000111111111;
       const pauseManagerAddress = await addressBook.read.pauseManager();
       const pauseManager = await hre.viem.getContractAt('PauseManager', pauseManagerAddress);
 
@@ -910,7 +910,7 @@ describe('Grid Contract', function () {
     it('Should revert when specific contract is paused in PauseManager with ERC20 token', async function () {
       const { Grid, user, administrator, addressBook, mockToken } = await loadFixture(deployGridFixture);
       const betAmount = 1000000000000000n;
-      const targetCells = 0b0000000000000000000011111;
+      const targetCells = 0b0000000000000000111111111;
 
       const pauseManagerAddress = await addressBook.read.pauseManager();
       const pauseManager = await hre.viem.getContractAt('PauseManager', pauseManagerAddress);
@@ -1131,6 +1131,74 @@ describe('Grid Contract', function () {
           account: ownersMultisig.address,
         }),
       ).to.be.rejectedWith('Gas limit too low');
+    });
+
+    it('Should allow owners multisig to set cells quantities', async function () {
+      const { Grid, ownersMultisig } = await loadFixture(deployGridFixture);
+
+      const initialWinCellsQuantity = await Grid.read.winCellsQuantity();
+      const initialTargetCellsQuantity = await Grid.read.targetCellsQuantity();
+
+      const newWinCellsQuantity = 4;
+      const newTargetCellsQuantity = 8;
+
+      await Grid.write.setCellsQuantities([newWinCellsQuantity, newTargetCellsQuantity], {
+        account: ownersMultisig.address,
+      });
+
+      const updatedWinCellsQuantity = await Grid.read.winCellsQuantity();
+      const updatedTargetCellsQuantity = await Grid.read.targetCellsQuantity();
+
+      expect(updatedWinCellsQuantity).to.equal(newWinCellsQuantity);
+      expect(updatedTargetCellsQuantity).to.equal(newTargetCellsQuantity);
+    });
+
+    it('Should prevent non-owners from setting cells quantities', async function () {
+      const { Grid, user } = await loadFixture(deployGridFixture);
+
+      await expect(
+        Grid.write.setCellsQuantities([4, 8], {
+          account: user.account.address,
+        }),
+      ).to.be.rejected;
+    });
+
+    it('Should prevent setting invalid win cells quantity', async function () {
+      const { Grid, ownersMultisig } = await loadFixture(deployGridFixture);
+      const totalCellsQuantity = await Grid.read.totalCellsQuantity();
+
+      // Test with win cells quantity = 0
+      await expect(
+        Grid.write.setCellsQuantities([0, 8], {
+          account: ownersMultisig.address,
+        }),
+      ).to.be.rejectedWith('Win cells quantity must be greater than 0');
+
+      // Test with win cells quantity > totalCellsQuantity
+      await expect(
+        Grid.write.setCellsQuantities([totalCellsQuantity + 1, 8], {
+          account: ownersMultisig.address,
+        }),
+      ).to.be.rejectedWith('Win cells quantity must be less than or equal to total cells');
+    });
+
+    it('Should prevent setting invalid target cells quantity', async function () {
+      const { Grid, ownersMultisig } = await loadFixture(deployGridFixture);
+      const totalCellsQuantity = await Grid.read.totalCellsQuantity();
+
+      // Test with target cells quantity = 0
+      await expect(
+        Grid.write.setCellsQuantities([4, 0], {
+          account: ownersMultisig.address,
+        }),
+      ).to.be.rejectedWith('Target cells quantity must be greater than 0');
+
+      // Test with target cells quantity > totalCellsQuantity
+      await expect(
+        Grid.write.setCellsQuantities([4, totalCellsQuantity + 1], {
+          account: ownersMultisig.address,
+        }),
+      ).to.be.rejectedWith('Target cells quantity must be less than or equal to total cells');
     });
   });
 
