@@ -132,8 +132,8 @@ describe('Dice Contract', function () {
         1n,
         '0x8af398995b04c28e9a51adb9721ef74c74f93e6a478f39e7e0777be13527e7ef',
         addressBook.address,
-        1,
-        100,
+        10,
+        90,
         parseEther('0.001'),
         parseEther('1'),
         10,
@@ -321,8 +321,8 @@ describe('Dice Contract', function () {
           1n,
           '0x8af398995b04c28e9a51adb9721ef74c74f93e6a478f39e7e0777be13527e7ef',
           addressBook.address,
-          1,
-          100,
+          10,
+          90,
           parseEther('0.001'),
           parseEther('1'),
           10,
@@ -1038,19 +1038,19 @@ describe('Dice Contract', function () {
         Dice.write.setMinBetValue([0], {
           account: ownersMultisig.address,
         }),
-      ).to.be.rejectedWith('Min bet value must be greater than 0');
+      ).to.be.rejectedWith('InvalidMinBetValue');
 
       await expect(
         Dice.write.setMinBetValue([maxBetValue], {
           account: ownersMultisig.address,
         }),
-      ).to.be.rejectedWith('Min bet value must be less than max bet');
+      ).to.be.rejectedWith('MinGreaterThanMax');
 
       await expect(
         Dice.write.setMinBetValue([maxBetValue + 1], {
           account: ownersMultisig.address,
         }),
-      ).to.be.rejectedWith('Min bet value must be less than max bet');
+      ).to.be.rejectedWith('MinGreaterThanMax');
     });
 
     it('Should allow owners multisig to set maximum bet value', async function () {
@@ -1073,19 +1073,19 @@ describe('Dice Contract', function () {
         Dice.write.setMaxBetValue([101], {
           account: ownersMultisig.address,
         }),
-      ).to.be.rejectedWith('Max bet value must be less or equals to 100');
+      ).to.be.rejectedWith('InvalidMaxBetValue');
 
       await expect(
         Dice.write.setMaxBetValue([minBetValue], {
           account: ownersMultisig.address,
         }),
-      ).to.be.rejectedWith('Max bet value must be greater than min bet');
+      ).to.be.rejectedWith('MinGreaterThanMax');
 
       await expect(
         Dice.write.setMaxBetValue([minBetValue - 1], {
           account: ownersMultisig.address,
         }),
-      ).to.be.rejectedWith('Max bet value must be greater than min bet');
+      ).to.be.rejectedWith('MinGreaterThanMax');
     });
 
     it('Should allow owners multisig to set minimum bet amount', async function () {
@@ -1109,19 +1109,19 @@ describe('Dice Contract', function () {
         Dice.write.setMinBetAmount([0n], {
           account: ownersMultisig.address,
         }),
-      ).to.be.rejectedWith('Min bet amount must be greater than 0');
+      ).to.be.rejectedWith('InvalidMinBetAmount');
 
       await expect(
         Dice.write.setMinBetAmount([maxBetAmount], {
           account: ownersMultisig.address,
         }),
-      ).to.be.rejectedWith('Min bet amount must be less than max bet');
+      ).to.be.rejectedWith('MinGreaterThanMax');
 
       await expect(
         Dice.write.setMinBetAmount([maxBetAmount + 1n], {
           account: ownersMultisig.address,
         }),
-      ).to.be.rejectedWith('Min bet amount must be less than max bet');
+      ).to.be.rejectedWith('MinGreaterThanMax');
     });
 
     it('Should allow owners multisig to set maximum bet amount', async function () {
@@ -1146,13 +1146,13 @@ describe('Dice Contract', function () {
         Dice.write.setMaxBetAmount([minBetAmount], {
           account: ownersMultisig.address,
         }),
-      ).to.be.rejectedWith('Max bet amount must be greater than min bet');
+      ).to.be.rejectedWith('MinGreaterThanMax');
 
       await expect(
         Dice.write.setMaxBetAmount([minBetAmount - 1n], {
           account: ownersMultisig.address,
         }),
-      ).to.be.rejectedWith('Max bet amount must be greater than min bet');
+      ).to.be.rejectedWith('MinGreaterThanMax');
     });
 
     it('Should allow owners multisig to set house edge', async function () {
@@ -1176,7 +1176,7 @@ describe('Dice Contract', function () {
         Dice.write.setHouseEdge([51], {
           account: ownersMultisig.address,
         }),
-      ).to.be.rejectedWith('House edge must be less than or equal to 50');
+      ).to.be.rejectedWith('InvalidHouseEdge');
     });
 
     it('Should prevent non-owners from changing configuration', async function () {
@@ -1340,7 +1340,7 @@ describe('Dice Contract', function () {
         Dice.write.withdrawToTreasury([zeroAddress, excessiveAmount], {
           account: administrator.account.address,
         }),
-      ).to.be.rejectedWith('Insufficient contract balance');
+      ).to.be.rejectedWith('InsufficientContractBalance');
     });
 
     it('Should revert if withdrawal amount exceeds contract balance for ERC20 tokens', async function () {
@@ -1353,7 +1353,7 @@ describe('Dice Contract', function () {
         Dice.write.withdrawToTreasury([mockToken.address, excessiveAmount], {
           account: administrator.account.address,
         }),
-      ).to.be.rejectedWith('Insufficient token balance');
+      ).to.be.rejectedWith('InsufficientContractBalance');
     });
   });
 });

@@ -144,6 +144,16 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
         address token
     );
 
+    /// @notice Error thrown when trying to set a houseEdge is outside the valid range
+    error InvalidHouseEdge();
+    /// @notice Error thrown when a min bet value is 0
+    error InvalidMinBetAmount();
+    /// @notice Error thrown when a min bet value is 0
+    error InvalidMinBetValue();
+    /// @notice Error thrown when a min bet value is greater or equals 100
+    error InvalidMaxBetValue();
+    /// @notice Error thrown when a min value greater than max value
+    error MinGreaterThanMax();
     /// @notice Error thrown when a player tries to roll while a previous roll is still in progress
     error RollInProgress();
     /// @notice Error thrown when a roll is outside the valid range
@@ -191,14 +201,12 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
     ) external initializer {
         require(_vrfCoordinator != address(0), "_vrfCoordinator is zero!");
         require(_addressBook != address(0), "_addressBook is zero!");
-        require(_houseEdge <= 50, "House edge must be less than or equal to 50");
-        require(_minBetAmount > 0, "Min bet amount must be greater than 0");
-        require(_minBetAmount < _maxBetAmount, "Min bet amount must be less than max bet");
-        require(_maxBetAmount > _minBetAmount, "Max bet amount must be greater than min bet");
-        require(_minBetValue > 0, "Min bet value must be greater than 0");
-        require(_minBetValue < _maxBetValue, "Min bet value must be less than max bet");
-        require(_maxBetValue <= 100, "Max bet value must be less or equals to 100");
-        require(_maxBetValue > _minBetValue, "Max bet value must be greater than min bet");
+        if (_houseEdge > 50) revert InvalidHouseEdge();
+        if (_minBetAmount == 0) revert InvalidBetAmount();
+        if (_minBetAmount >= _maxBetAmount) revert InvalidBetAmount();
+        if (_minBetValue == 0) revert InvalidMinBetValue();
+        if (_maxBetValue >= 100) revert InvalidMaxBetValue();
+        if (_minBetValue >= _maxBetValue) revert MinGreaterThanMax();
 
         s_vrfCoordinator = IVRFCoordinatorV2Plus(_vrfCoordinator);
         subscriptionId = _subscriptionId;
@@ -470,11 +478,11 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
         if (_token != address(0)) addressBook.tokensManager().requireTokenSupport(_token);
 
         if (_token == address(0)) {
-            require(_amount <= address(this).balance, "Insufficient contract balance");
+            if (address(this).balance < _amount) revert InsufficientContractBalance();
             Address.sendValue(payable(addressBook.treasury()), _amount);
         } else {
             IERC20 token = IERC20(_token);
-            require(_amount <= token.balanceOf(address(this)), "Insufficient token balance");
+            if (token.balanceOf(address(this)) < _amount) revert InsufficientContractBalance();
             token.safeTransfer(addressBook.treasury(), _amount);
         }
     }
@@ -486,8 +494,8 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
      */
     function setMinBetValue(uint8 newMinBetValue) external {
         addressBook.accessRoles().requireOwnersMultisig(msg.sender);
-        require(newMinBetValue > 0, "Min bet value must be greater than 0");
-        require(newMinBetValue < maxBetValue, "Min bet value must be less than max bet");
+        if (newMinBetValue == 0) revert InvalidMinBetValue();
+        if (newMinBetValue >= maxBetValue) revert MinGreaterThanMax();
         minBetValue = newMinBetValue;
     }
 
@@ -498,8 +506,8 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
      */
     function setMaxBetValue(uint8 newMaxBetValue) external {
         addressBook.accessRoles().requireOwnersMultisig(msg.sender);
-        require(newMaxBetValue <= 100, "Max bet value must be less or equals to 100");
-        require(newMaxBetValue > minBetValue, "Max bet value must be greater than min bet");
+        if (newMaxBetValue >= 100) revert InvalidMaxBetValue();
+        if (newMaxBetValue <= minBetValue) revert MinGreaterThanMax();
         maxBetValue = newMaxBetValue;
     }
 
@@ -510,8 +518,8 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
      */
     function setMinBetAmount(uint256 newMinBetAmount) external {
         addressBook.accessRoles().requireOwnersMultisig(msg.sender);
-        require(newMinBetAmount > 0, "Min bet amount must be greater than 0");
-        require(newMinBetAmount < maxBetAmount, "Min bet amount must be less than max bet");
+        if (newMinBetAmount == 0) revert InvalidMinBetAmount();
+        if (newMinBetAmount >= maxBetAmount) revert MinGreaterThanMax();
         minBetAmount = newMinBetAmount;
     }
 
@@ -522,7 +530,7 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
      */
     function setMaxBetAmount(uint256 newMaxBetAmount) external {
         addressBook.accessRoles().requireOwnersMultisig(msg.sender);
-        require(newMaxBetAmount > minBetAmount, "Max bet amount must be greater than min bet");
+        if (newMaxBetAmount <= minBetAmount) revert MinGreaterThanMax();
         maxBetAmount = newMaxBetAmount;
     }
 
@@ -533,7 +541,7 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
      */
     function setHouseEdge(uint8 newHouseEdge) external {
         addressBook.accessRoles().requireOwnersMultisig(msg.sender);
-        require(newHouseEdge <= 50, "House edge must be less than or equal to 50");
+        if (newHouseEdge > 50) revert InvalidHouseEdge();
         houseEdge = newHouseEdge;
     }
 

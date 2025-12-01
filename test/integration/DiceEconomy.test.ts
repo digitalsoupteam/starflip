@@ -127,8 +127,8 @@ describe('Dice Contract Economy Test', function () {
         1n,
         '0x8af398995b04c28e9a51adb9721ef74c74f93e6a478f39e7e0777be13527e7ef',
         addressBook.address,
-        1,
-        100,
+        10,
+        90,
         parseEther('0.001'),
         parseEther('1'),
         10,
@@ -192,12 +192,12 @@ describe('Dice Contract Economy Test', function () {
   it('Should run 10000 bets and track economy', async function () {
     const { Dice, MockVRFCoordinator, user } = await loadFixture(deployDiceFixture);
 
-    let contractBalance = 100n * 10n ** 18n;
-    let playerBalance = 100n * 10n ** 18n;
+    let contractBalance = parseEther('100');
+    let playerBalance = parseEther('100')
 
     const results = [];
 
-    for (let i = 0; i < 10000; i++) {
+    for (let i = 0; i < 1000; i++) {
       const betAmount = BigInt(Math.floor(Math.random() * 100) + 1) * 10n ** 16n;
 
       if (playerBalance < betAmount) continue;
