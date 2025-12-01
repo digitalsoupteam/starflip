@@ -255,7 +255,7 @@ describe('Grid Contract', function () {
   describe('Roll Function', function () {
     it('Should emit GridRollRequested event when roll is called with native token', async function () {
       const { Grid, user, zeroAddress } = await loadFixture(deployGridFixture);
-      const txHash = await Grid.write.roll([0b0000000000000000111111111, zeroAddress, 0n], {
+      const txHash = await Grid.write.roll([0b0000000000000000111111111, zeroAddress, 0n, zeroAddress], {
         account: user.account.address,
         value: 1000000000000000n,
       });
@@ -285,7 +285,7 @@ describe('Grid Contract', function () {
         account: user.account.address,
       });
 
-      const txHash = await Grid.write.roll([0b0000000000000000111111111, mockToken.address, 1000000000000000n], {
+      const txHash = await Grid.write.roll([0b0000000000000000111111111, mockToken.address, 1000000000000000n, zeroAddress], {
         account: user.account.address,
       });
 
@@ -338,7 +338,7 @@ describe('Grid Contract', function () {
       await setBalance(UnregisteredGrid.address, parseEther('100'));
 
       await expect(
-        UnregisteredGrid.write.roll([0b0000000000000000111111111, zeroAddress, 0n], {
+        UnregisteredGrid.write.roll([0b0000000000000000111111111, zeroAddress, 0n, zeroAddress], {
           account: user.account.address,
           value: 1000000000000000n,
         }),
@@ -348,13 +348,13 @@ describe('Grid Contract', function () {
     it('Should revert if a roll is already in progress with native token', async function () {
       const { Grid, user, zeroAddress } = await loadFixture(deployGridFixture);
 
-      await Grid.write.roll([0b0000000000000000111111111, zeroAddress, 0n], {
+      await Grid.write.roll([0b0000000000000000111111111, zeroAddress, 0n, zeroAddress], {
         account: user.account.address,
         value: 1000000000000000n,
       });
 
       await expect(
-        Grid.write.roll([0b0000000000000000111111111, zeroAddress, 0n], {
+        Grid.write.roll([0b0000000000000000111111111, zeroAddress, 0n, zeroAddress], {
           account: user.account.address,
           value: 1000000000000000n,
         }),
@@ -368,11 +368,11 @@ describe('Grid Contract', function () {
         account: user.account.address,
       });
 
-      await Grid.write.roll([0b0000000000000000111111111, mockToken.address, 1000000000000000n], {
+      await Grid.write.roll([0b0000000000000000111111111, mockToken.address, 1000000000000000n, zeroAddress], {
         account: user.account.address,
       });
       await expect(
-        Grid.write.roll([0b0000000000000000111111111, mockToken.address, 1000000000000000n], {
+        Grid.write.roll([0b0000000000000000111111111, mockToken.address, 1000000000000000n, zeroAddress], {
           account: user.account.address,
         }),
       ).to.be.rejectedWith('RollInProgress');
@@ -413,7 +413,7 @@ describe('Grid Contract', function () {
       const betAmount = 1000000000000000n;
       const targetCells = 0b0000000000000000111111111;
 
-      await Grid.write.roll([targetCells, zeroAddress, 0n], {
+      await Grid.write.roll([targetCells, zeroAddress, 0n, zeroAddress], {
         account: user.account.address,
         value: betAmount,
       });
@@ -444,7 +444,7 @@ describe('Grid Contract', function () {
         account: user.account.address,
       });
 
-      await Grid.write.roll([targetCells, mockToken.address, betAmount], {
+      await Grid.write.roll([targetCells, mockToken.address, betAmount, zeroAddress], {
         account: user.account.address,
       });
 
@@ -470,7 +470,7 @@ describe('Grid Contract', function () {
       const betAmount = 1000000000000000n;
       const targetCells = 0b0000000000000000111111111;
 
-      await Grid.write.roll([targetCells, zeroAddress, 0n], {
+      await Grid.write.roll([targetCells, zeroAddress, 0n, zeroAddress], {
         account: user.account.address,
         value: betAmount,
       });
@@ -506,7 +506,7 @@ describe('Grid Contract', function () {
         account: user.account.address,
       });
 
-      await Grid.write.roll([targetCells, mockToken.address, betAmount], {
+      await Grid.write.roll([targetCells, mockToken.address, betAmount, zeroAddress], {
         account: user.account.address,
       });
 
@@ -550,7 +550,7 @@ describe('Grid Contract', function () {
       const betAmount = 1000000000000000n;
       const targetCells = 0b0000000000000000111111111;
 
-      await Grid.write.roll([targetCells, zeroAddress, 0n], {
+      await Grid.write.roll([targetCells, zeroAddress, 0n, zeroAddress], {
         account: user.account.address,
         value: betAmount,
       });
@@ -570,7 +570,7 @@ describe('Grid Contract', function () {
         account: user.account.address,
       });
 
-      await Grid.write.roll([targetCells, mockToken.address, betAmount], {
+      await Grid.write.roll([targetCells, mockToken.address, betAmount, zeroAddress], {
         account: user.account.address,
       });
 
@@ -589,7 +589,7 @@ describe('Grid Contract', function () {
         account: user.account.address,
       });
 
-      await Grid.write.roll([targetCells, mockToken.address, betAmount], {
+      await Grid.write.roll([targetCells, mockToken.address, betAmount, zeroAddress], {
         account: user.account.address,
       });
 
@@ -613,7 +613,7 @@ describe('Grid Contract', function () {
       const betAmount = 1000000000000000n;
       const targetCells = 0b0000000000000000111111111;
 
-      await Grid.write.roll([targetCells, zeroAddress, betAmount], {
+      await Grid.write.roll([targetCells, zeroAddress, betAmount, zeroAddress], {
         account: user.account.address,
         value: betAmount,
       });
@@ -634,7 +634,7 @@ describe('Grid Contract', function () {
         account: user.account.address,
       });
 
-      await Grid.write.roll([targetCells, mockToken.address, betAmount], {
+      await Grid.write.roll([targetCells, mockToken.address, betAmount, zeroAddress], {
         account: user.account.address,
       });
 
@@ -656,7 +656,7 @@ describe('Grid Contract', function () {
 
       expect(beforeRoll).to.be.false;
 
-      await Grid.write.roll([targetCells, zeroAddress, betAmount], {
+      await Grid.write.roll([targetCells, zeroAddress, betAmount, zeroAddress], {
         account: user.account.address,
         value: betAmount,
       });
@@ -683,7 +683,7 @@ describe('Grid Contract', function () {
         account: user.account.address,
       });
 
-      await Grid.write.roll([targetCells, mockToken.address, betAmount], {
+      await Grid.write.roll([targetCells, mockToken.address, betAmount, zeroAddress], {
         account: user.account.address,
       });
 
@@ -699,7 +699,7 @@ describe('Grid Contract', function () {
       const betAmount = 1000000000000000n;
       const targetCells = 0b0000000000000000111111111;
 
-      await Grid.write.roll([targetCells, zeroAddress, betAmount], {
+      await Grid.write.roll([targetCells, zeroAddress, betAmount, zeroAddress], {
         account: user.account.address,
         value: betAmount,
       });
@@ -730,7 +730,7 @@ describe('Grid Contract', function () {
         account: user.account.address,
       });
 
-      await Grid.write.roll([targetCells, mockToken.address, betAmount], {
+      await Grid.write.roll([targetCells, mockToken.address, betAmount, zeroAddress], {
         account: user.account.address,
       });
 
@@ -757,7 +757,7 @@ describe('Grid Contract', function () {
       const targetCells = 0b0000000000000000111111111;
       const betAmount = 1000000000000000n;
 
-      await Grid.write.roll([targetCells, zeroAddress, betAmount], {
+      await Grid.write.roll([targetCells, zeroAddress, betAmount, zeroAddress], {
         account: user.account.address,
         value: betAmount,
       });
@@ -798,7 +798,7 @@ describe('Grid Contract', function () {
         account: user.account.address,
       });
 
-      await Grid.write.roll([targetCells, mockToken.address, betAmount], {
+      await Grid.write.roll([targetCells, mockToken.address, betAmount, zeroAddress], {
         account: user.account.address,
       });
 
@@ -852,7 +852,7 @@ describe('Grid Contract', function () {
       });
 
       await expect(
-        Grid.write.roll([targetCells, zeroAddress, betAmount], {
+        Grid.write.roll([targetCells, zeroAddress, betAmount, zeroAddress], {
           account: user.account.address,
           value: betAmount,
         }),
@@ -881,7 +881,7 @@ describe('Grid Contract', function () {
       });
 
       await expect(
-        Grid.write.roll([targetCells, mockToken.address, betAmount], {
+        Grid.write.roll([targetCells, mockToken.address, betAmount, zeroAddress], {
           account: user.account.address,
         }),
       ).to.be.rejectedWith('paused!');
@@ -900,7 +900,7 @@ describe('Grid Contract', function () {
       });
 
       await expect(
-        Grid.write.roll([targetCells, zeroAddress, betAmount], {
+        Grid.write.roll([targetCells, zeroAddress, betAmount, zeroAddress], {
           account: user.account.address,
           value: betAmount,
         }),
@@ -926,7 +926,7 @@ describe('Grid Contract', function () {
       });
 
       await expect(
-        Grid.write.roll([targetCells, mockToken.address, betAmount], {
+        Grid.write.roll([targetCells, mockToken.address, betAmount, zeroAddress], {
           account: user.account.address,
         }),
       ).to.be.rejectedWith('paused!');
@@ -1006,19 +1006,19 @@ describe('Grid Contract', function () {
         Grid.write.setMinBetAmount([0n], {
           account: ownersMultisig.address,
         }),
-      ).to.be.rejectedWith('Min bet amount must be greater than 0');
+      ).to.be.rejectedWith('InvalidMinBetAmount');
 
       await expect(
         Grid.write.setMinBetAmount([maxBetAmount], {
           account: ownersMultisig.address,
         }),
-      ).to.be.rejectedWith('Min bet amount must be less than max bet');
+      ).to.be.rejectedWith('MinGreaterThanMax');
 
       await expect(
         Grid.write.setMinBetAmount([maxBetAmount + 1n], {
           account: ownersMultisig.address,
         }),
-      ).to.be.rejectedWith('Min bet amount must be less than max bet');
+      ).to.be.rejectedWith('MinGreaterThanMax');
     });
 
     it('Should allow owners multisig to set maximum bet amount', async function () {
@@ -1043,13 +1043,13 @@ describe('Grid Contract', function () {
         Grid.write.setMaxBetAmount([minBetAmount], {
           account: ownersMultisig.address,
         }),
-      ).to.be.rejectedWith('Max bet amount must be greater than min bet');
+      ).to.be.rejectedWith('MinGreaterThanMax');
 
       await expect(
         Grid.write.setMaxBetAmount([minBetAmount - 1n], {
           account: ownersMultisig.address,
         }),
-      ).to.be.rejectedWith('Max bet amount must be greater than min bet');
+      ).to.be.rejectedWith('MinGreaterThanMax');
     });
 
     it('Should allow owners multisig to set house edge', async function () {
@@ -1073,7 +1073,7 @@ describe('Grid Contract', function () {
         Grid.write.setHouseEdge([51], {
           account: ownersMultisig.address,
         }),
-      ).to.be.rejectedWith('House edge must be less than or equal to 50');
+      ).to.be.rejectedWith('InvalidHouseEdge');
     });
 
     it('Should prevent non-owners from changing configuration', async function () {
@@ -1133,23 +1133,31 @@ describe('Grid Contract', function () {
       ).to.be.rejectedWith('Gas limit too low');
     });
 
-    it('Should allow owners multisig to set cells quantities', async function () {
+    it('Should allow owners multisig to set win cells quantity', async function () {
       const { Grid, ownersMultisig } = await loadFixture(deployGridFixture);
 
-      const initialWinCellsQuantity = await Grid.read.winCellsQuantity();
-      const initialTargetCellsQuantity = await Grid.read.targetCellsQuantity();
-
       const newWinCellsQuantity = 4;
-      const newTargetCellsQuantity = 8;
 
-      await Grid.write.setCellsQuantities([newWinCellsQuantity, newTargetCellsQuantity], {
+      await Grid.write.setWinCellsQuantity([newWinCellsQuantity], {
         account: ownersMultisig.address,
       });
 
       const updatedWinCellsQuantity = await Grid.read.winCellsQuantity();
-      const updatedTargetCellsQuantity = await Grid.read.targetCellsQuantity();
 
       expect(updatedWinCellsQuantity).to.equal(newWinCellsQuantity);
+    });
+
+    it('Should allow owners multisig to set target cells quantity', async function () {
+      const { Grid, ownersMultisig } = await loadFixture(deployGridFixture);
+
+      const newTargetCellsQuantity = 8;
+
+      await Grid.write.setTargetCellsQuantity([newTargetCellsQuantity], {
+        account: ownersMultisig.address,
+      });
+
+      const updatedTargetCellsQuantity = await Grid.read.targetCellsQuantity();
+
       expect(updatedTargetCellsQuantity).to.equal(newTargetCellsQuantity);
     });
 
@@ -1157,7 +1165,13 @@ describe('Grid Contract', function () {
       const { Grid, user } = await loadFixture(deployGridFixture);
 
       await expect(
-        Grid.write.setCellsQuantities([4, 8], {
+        Grid.write.setTargetCellsQuantity([4], {
+          account: user.account.address,
+        }),
+      ).to.be.rejected;
+
+      await expect(
+        Grid.write.setTargetCellsQuantity([8], {
           account: user.account.address,
         }),
       ).to.be.rejected;
@@ -1167,38 +1181,34 @@ describe('Grid Contract', function () {
       const { Grid, ownersMultisig } = await loadFixture(deployGridFixture);
       const totalCellsQuantity = await Grid.read.totalCellsQuantity();
 
-      // Test with win cells quantity = 0
       await expect(
-        Grid.write.setCellsQuantities([0, 8], {
+        Grid.write.setWinCellsQuantity([0], {
           account: ownersMultisig.address,
         }),
-      ).to.be.rejectedWith('Win cells quantity must be greater than 0');
+      ).to.be.rejectedWith('InvalidWinCellsQuantity');
 
-      // Test with win cells quantity > totalCellsQuantity
       await expect(
-        Grid.write.setCellsQuantities([totalCellsQuantity + 1, 8], {
+        Grid.write.setWinCellsQuantity([totalCellsQuantity], {
           account: ownersMultisig.address,
         }),
-      ).to.be.rejectedWith('Win cells quantity must be less than or equal to total cells');
+      ).to.be.rejectedWith('MinGreaterThanMax');
     });
 
     it('Should prevent setting invalid target cells quantity', async function () {
       const { Grid, ownersMultisig } = await loadFixture(deployGridFixture);
       const totalCellsQuantity = await Grid.read.totalCellsQuantity();
 
-      // Test with target cells quantity = 0
       await expect(
-        Grid.write.setCellsQuantities([4, 0], {
+        Grid.write.setTargetCellsQuantity([0], {
           account: ownersMultisig.address,
         }),
-      ).to.be.rejectedWith('Target cells quantity must be greater than 0');
+      ).to.be.rejectedWith('InvalidTargetCellsQuantity');
 
-      // Test with target cells quantity > totalCellsQuantity
       await expect(
-        Grid.write.setCellsQuantities([4, totalCellsQuantity + 1], {
+        Grid.write.setTargetCellsQuantity([totalCellsQuantity + 1], {
           account: ownersMultisig.address,
         }),
-      ).to.be.rejectedWith('Target cells quantity must be less than or equal to total cells');
+      ).to.be.rejectedWith('MinGreaterThanMax');
     });
   });
 
@@ -1291,7 +1301,7 @@ describe('Grid Contract', function () {
         Grid.write.withdrawToTreasury([zeroAddress, excessiveAmount], {
           account: administrator.account.address,
         }),
-      ).to.be.rejectedWith('Insufficient contract balance');
+      ).to.be.rejectedWith('InsufficientContractBalance');
     });
 
     it('Should revert if withdrawal amount exceeds contract balance for ERC20 tokens', async function () {
@@ -1304,7 +1314,7 @@ describe('Grid Contract', function () {
         Grid.write.withdrawToTreasury([mockToken.address, excessiveAmount], {
           account: administrator.account.address,
         }),
-      ).to.be.rejectedWith('Insufficient token balance');
+      ).to.be.rejectedWith('InsufficientContractBalance');
     });
   });
 });

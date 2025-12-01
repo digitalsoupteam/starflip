@@ -15,4 +15,6 @@ interface IReferralProgram {
     function claim(address _payToken, uint256 _payTokenAmount) external;
 
     function addReward(address player, uint256 tokenAmount, address tokenAddress) external payable;
+
+    function setReferral(address player, address referrer) external;
 }

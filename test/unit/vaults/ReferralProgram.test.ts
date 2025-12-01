@@ -138,9 +138,9 @@ describe('ReferralProgram Contract', function () {
         deployer.account.address,
         1n,
         '0x8af398995b04c28e9a51adb9721ef74c74f93e6a478f39e7e0777be13527e7ef',
-        accessRoles.address,
-        1,
-        100,
+        addressBook.address,
+        10,
+        90,
         parseEther('0.001'),
         parseEther('1'),
         10,
@@ -350,6 +350,17 @@ describe('ReferralProgram Contract', function () {
           account: mockGame.address,
         }),
       ).to.be.rejectedWith('ReferralProgram: player already has a referrer');
+    });
+
+    it('Should revert if called by non-game contract', async function () {
+      const { referralProgram, player1, player2 } = await loadFixture(deployReferralProgramFixture);
+
+      // Try to set referral from a non-game contract (player2 address)
+      await expect(
+        referralProgram.write.setReferral([player1.account.address, player2.account.address], {
+          account: player2.account.address,
+        }),
+      ).to.be.rejectedWith('only game!');
     });
   });
 

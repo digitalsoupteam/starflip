@@ -214,7 +214,7 @@ describe('Grid Contract Economy Test', function() {
       contractBalance += betAmount;
       const targetCellsMask = packCellsToMask(targetCells);
 
-      await Grid.write.roll([targetCellsMask, zeroAddress, betAmount], {
+      await Grid.write.roll([targetCellsMask, zeroAddress, betAmount, zeroAddress], {
         account: user.account.address,
         value: betAmount,
       });

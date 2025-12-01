@@ -203,7 +203,7 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
         require(_addressBook != address(0), "_addressBook is zero!");
         if (_houseEdge > 50) revert InvalidHouseEdge();
         if (_minBetAmount == 0) revert InvalidBetAmount();
-        if (_minBetAmount >= _maxBetAmount) revert InvalidBetAmount();
+        if (_minBetAmount >= _maxBetAmount) revert MinGreaterThanMax();
         if (_minBetValue == 0) revert InvalidMinBetValue();
         if (_maxBetValue >= 100) revert InvalidMaxBetValue();
         if (_minBetValue >= _maxBetValue) revert MinGreaterThanMax();
@@ -248,13 +248,15 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
      * @param comparisonType The type of comparison for the bet: GREATER_THAN or LESS_THAN
      * @param token The address of the token to bet with (use address(0) for ETH)
      * @param betAmount The amount of tokens to bet (ignored for native token, use msg.value instead)
+     * @param referrer The address of the referrer (use address(0) for no referrer)
      * @return requestId The ID of the Chainlink VRF request associated with this dice roll
      */
     function roll(
         uint256 targetNumber,
         ComparisonType comparisonType,
         address token,
-        uint256 betAmount
+        uint256 betAmount,
+        address referrer
     ) public payable returns (uint256) {
         require(
             addressBook.gameManager().isGameExist(address(this)),
@@ -284,9 +286,9 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
         uint256 payout = calculatePayout(actualBetAmount, targetNumber, comparisonType);
 
         if (token == address(0)) {
-            if (address(this).balance < payout) revert InsufficientContractBalance();
+            if (address(this).balance <= payout) revert InsufficientContractBalance();
         } else {
-            if (IERC20(token).balanceOf(address(this)) < payout) revert InsufficientContractBalance();
+            if (IERC20(token).balanceOf(address(this)) <= payout) revert InsufficientContractBalance();
         }
 
         rollResults[msg.sender] = type(uint256).max;
@@ -320,6 +322,8 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
         requestIdToBet[requestId] = bet;
 
         emit DiceRollRequested(requestId, msg.sender, actualBetAmount, targetNumber, comparisonType, token);
+
+        if (referrer != address(0)) addressBook.referralProgram().setReferral(msg.sender, referrer);
 
         return requestId;
     }
@@ -478,11 +482,11 @@ contract Dice is VRFConsumerBaseV2Plus, UUPSUpgradeable, IGame {
         if (_token != address(0)) addressBook.tokensManager().requireTokenSupport(_token);
 
         if (_token == address(0)) {
-            if (address(this).balance < _amount) revert InsufficientContractBalance();
+            if (address(this).balance <= _amount) revert InsufficientContractBalance();
             Address.sendValue(payable(addressBook.treasury()), _amount);
         } else {
             IERC20 token = IERC20(_token);
-            if (token.balanceOf(address(this)) < _amount) revert InsufficientContractBalance();
+            if (token.balanceOf(address(this)) <= _amount) revert InsufficientContractBalance();
             token.safeTransfer(addressBook.treasury(), _amount);
         }
     }

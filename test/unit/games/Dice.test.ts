@@ -250,7 +250,7 @@ describe('Dice Contract', function () {
   describe('Roll Function', function () {
     it('Should emit DiceRollRequested event when roll is called with native token', async function () {
       const { Dice, user, zeroAddress } = await loadFixture(deployDiceFixture);
-      const txHash = await Dice.write.roll([50n, 0, zeroAddress, 0n], {
+      const txHash = await Dice.write.roll([50n, 0, zeroAddress, 0n, zeroAddress], {
         account: user.account.address,
         value: 1000000000000000n,
       });
@@ -281,7 +281,7 @@ describe('Dice Contract', function () {
         account: user.account.address,
       });
 
-      const txHash = await Dice.write.roll([50n, 0, mockToken.address, 1000000000000000n], {
+      const txHash = await Dice.write.roll([50n, 0, mockToken.address, 1000000000000000n, zeroAddress], {
         account: user.account.address,
       });
 
@@ -336,7 +336,7 @@ describe('Dice Contract', function () {
       await setBalance(UnregisteredDice.address, parseEther('100'));
 
       await expect(
-        UnregisteredDice.write.roll([50n, 0, zeroAddress, 0n], {
+        UnregisteredDice.write.roll([50n, 0, zeroAddress, 0n, zeroAddress], {
           account: user.account.address,
           value: 1000000000000000n,
         }),
@@ -346,13 +346,13 @@ describe('Dice Contract', function () {
     it('Should revert if a roll is already in progress with native token', async function () {
       const { Dice, user, zeroAddress } = await loadFixture(deployDiceFixture);
 
-      await Dice.write.roll([50n, 0, zeroAddress, 0n], {
+      await Dice.write.roll([50n, 0, zeroAddress, 0n, zeroAddress], {
         account: user.account.address,
         value: 1000000000000000n,
       });
 
       await expect(
-        Dice.write.roll([50n, 0, zeroAddress, 0n], {
+        Dice.write.roll([50n, 0, zeroAddress, 0n, zeroAddress], {
           account: user.account.address,
           value: 1000000000000000n,
         }),
@@ -367,12 +367,12 @@ describe('Dice Contract', function () {
         account: user.account.address,
       });
 
-      await Dice.write.roll([50n, 0, mockToken.address, 1000000000000000n], {
+      await Dice.write.roll([50n, 0, mockToken.address, 1000000000000000n, zeroAddress], {
         account: user.account.address,
       });
 
       await expect(
-        Dice.write.roll([50n, 0, mockToken.address, 1000000000000000n], {
+        Dice.write.roll([50n, 0, mockToken.address, 1000000000000000n, zeroAddress], {
           account: user.account.address,
         }),
       ).to.be.rejectedWith('RollInProgress');
@@ -453,7 +453,7 @@ describe('Dice Contract', function () {
       const targetNumber = 50n;
       const comparisonType = 0;
 
-      await Dice.write.roll([targetNumber, comparisonType, zeroAddress, 0n], {
+      await Dice.write.roll([targetNumber, comparisonType, zeroAddress, 0n, zeroAddress], {
         account: user.account.address,
         value: betAmount,
       });
@@ -488,7 +488,7 @@ describe('Dice Contract', function () {
         account: user.account.address,
       });
 
-      await Dice.write.roll([targetNumber, comparisonType, mockToken.address, betAmount], {
+      await Dice.write.roll([targetNumber, comparisonType, mockToken.address, betAmount, zeroAddress], {
         account: user.account.address,
       });
 
@@ -517,7 +517,7 @@ describe('Dice Contract', function () {
       const targetNumber = 50n;
       const comparisonType = 0;
 
-      await Dice.write.roll([targetNumber, comparisonType, zeroAddress, 0n], {
+      await Dice.write.roll([targetNumber, comparisonType, zeroAddress, 0n, zeroAddress], {
         account: user.account.address,
         value: betAmount,
       });
@@ -551,7 +551,7 @@ describe('Dice Contract', function () {
         account: user.account.address,
       });
 
-      await Dice.write.roll([targetNumber, comparisonType, mockToken.address, betAmount], {
+      await Dice.write.roll([targetNumber, comparisonType, mockToken.address, betAmount, zeroAddress], {
         account: user.account.address,
       });
 
@@ -590,7 +590,7 @@ describe('Dice Contract', function () {
       const initialBalance = await Dice.read.getContractBalance();
       const betAmount = 1000000000000000n;
 
-      await Dice.write.roll([50n, 0, zeroAddress, 0n], {
+      await Dice.write.roll([50n, 0, zeroAddress, 0n, zeroAddress], {
         account: user.account.address,
         value: betAmount,
       });
@@ -610,7 +610,7 @@ describe('Dice Contract', function () {
         account: user.account.address,
       });
 
-      await Dice.write.roll([50n, 0, mockToken.address, betAmount], {
+      await Dice.write.roll([50n, 0, mockToken.address, betAmount, zeroAddress], {
         account: user.account.address,
       });
 
@@ -621,20 +621,17 @@ describe('Dice Contract', function () {
     it('Should update ERC20 token balance after receiving an ERC20 token bet', async function () {
       const { Dice, user, mockToken } = await loadFixture(deployDiceFixture);
 
-      // Get initial token balance of the Dice contract
       const initialTokenBalance = await mockToken.read.balanceOf([Dice.address]);
       const betAmount = 1000000000000000n;
 
-      // Approve the Dice contract to spend tokens
       await mockToken.write.approve([Dice.address, betAmount], {
         account: user.account.address,
       });
 
-      await Dice.write.roll([50n, 0, mockToken.address, betAmount], {
+      await Dice.write.roll([50n, 0, mockToken.address, betAmount, zeroAddress], {
         account: user.account.address,
       });
 
-      // Get new token balance of the Dice contract
       const newTokenBalance = await mockToken.read.balanceOf([Dice.address]);
       expect(newTokenBalance).to.equal(initialTokenBalance + betAmount);
     });
@@ -653,7 +650,7 @@ describe('Dice Contract', function () {
     it('Should return 0 if a native token roll is in progress', async function () {
       const { Dice, user, zeroAddress } = await loadFixture(deployDiceFixture);
 
-      await Dice.write.roll([50n, 0, zeroAddress, 0n], {
+      await Dice.write.roll([50n, 0, zeroAddress, 0n, zeroAddress], {
         account: user.account.address,
         value: 1000000000000000n,
       });
@@ -674,7 +671,7 @@ describe('Dice Contract', function () {
         account: user.account.address,
       });
 
-      await Dice.write.roll([50n, 0, mockToken.address, betAmount], {
+      await Dice.write.roll([50n, 0, mockToken.address, betAmount, zeroAddress], {
         account: user.account.address,
       });
 
@@ -693,7 +690,7 @@ describe('Dice Contract', function () {
 
       expect(beforeRoll).to.be.false;
 
-      await Dice.write.roll([50n, 0, zeroAddress, 0n], {
+      await Dice.write.roll([50n, 0, zeroAddress, 0n, zeroAddress], {
         account: user.account.address,
         value: 1000000000000000n,
       });
@@ -720,7 +717,7 @@ describe('Dice Contract', function () {
         account: user.account.address,
       });
 
-      await Dice.write.roll([50n, 0, mockToken.address, betAmount], {
+      await Dice.write.roll([50n, 0, mockToken.address, betAmount, zeroAddress], {
         account: user.account.address,
       });
 
@@ -734,7 +731,7 @@ describe('Dice Contract', function () {
     it('Should correctly calculate and store roll result after fulfillment with native token', async function () {
       const { Dice, MockVRFCoordinator, user, zeroAddress } = await loadFixture(deployDiceFixture);
 
-      await Dice.write.roll([50n, 0, zeroAddress, 0n], {
+      await Dice.write.roll([50n, 0, zeroAddress, 0n, zeroAddress], {
         account: user.account.address,
         value: 1000000000000000n,
       });
@@ -766,7 +763,7 @@ describe('Dice Contract', function () {
         account: user.account.address,
       });
 
-      await Dice.write.roll([50n, 0, mockToken.address, betAmount], {
+      await Dice.write.roll([50n, 0, mockToken.address, betAmount, zeroAddress], {
         account: user.account.address,
       });
 
@@ -791,7 +788,7 @@ describe('Dice Contract', function () {
     it('Should emit DiceRollFulfilled event when random words are fulfilled with native token', async function () {
       const { Dice, MockVRFCoordinator, user, zeroAddress } = await loadFixture(deployDiceFixture);
 
-      await Dice.write.roll([50n, 0, zeroAddress, 0n], {
+      await Dice.write.roll([50n, 0, zeroAddress, 0n, zeroAddress], {
         account: user.account.address,
         value: 1000000000000000n,
       });
@@ -833,7 +830,7 @@ describe('Dice Contract', function () {
         account: user.account.address,
       });
 
-      await Dice.write.roll([50n, 0, mockToken.address, betAmount], {
+      await Dice.write.roll([50n, 0, mockToken.address, betAmount, zeroAddress], {
         account: user.account.address,
       });
 
@@ -886,7 +883,7 @@ describe('Dice Contract', function () {
       });
 
       await expect(
-        Dice.write.roll([50n, 0, zeroAddress, 0n], {
+        Dice.write.roll([50n, 0, zeroAddress, 0n, zeroAddress], {
           account: user.account.address,
           value: 1000000000000000n,
         }),
@@ -915,7 +912,7 @@ describe('Dice Contract', function () {
       });
 
       await expect(
-        Dice.write.roll([50n, 0, mockToken.address, betAmount], {
+        Dice.write.roll([50n, 0, mockToken.address, betAmount, zeroAddress], {
           account: user.account.address,
         }),
       ).to.be.rejectedWith('paused!');
@@ -932,7 +929,7 @@ describe('Dice Contract', function () {
       });
 
       await expect(
-        Dice.write.roll([50n, 0, zeroAddress, 0n], {
+        Dice.write.roll([50n, 0, zeroAddress, 0n, zeroAddress], {
           account: user.account.address,
           value: 1000000000000000n,
         }),
@@ -958,7 +955,7 @@ describe('Dice Contract', function () {
       });
 
       await expect(
-        Dice.write.roll([50n, 0, mockToken.address, betAmount], {
+        Dice.write.roll([50n, 0, mockToken.address, betAmount, zeroAddress], {
           account: user.account.address,
         }),
       ).to.be.rejectedWith('paused!');

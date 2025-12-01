@@ -208,7 +208,7 @@ describe('Dice Contract Economy Test', function () {
       playerBalance -= betAmount;
       contractBalance += betAmount;
 
-      await Dice.write.roll([BigInt(targetNumber), comparisonType, zeroAddress, betAmount], {
+      await Dice.write.roll([BigInt(targetNumber), comparisonType, zeroAddress, betAmount, zeroAddress], {
         account: user.account.address,
         value: betAmount,
       });

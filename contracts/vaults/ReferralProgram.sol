@@ -93,6 +93,7 @@ IReferralProgram
      * @param referrer The address of the referrer
      */
     function setReferral(address player, address referrer) external {
+        require(addressBook.gameManager().isGameExist(msg.sender), 'only game!');
         require(player != address(0), "ReferralProgram: player is the zero address");
         require(referrer != address(0), "ReferralProgram: referrer is the zero address");
         require(player != referrer, "ReferralProgram: player cannot refer themselves");
